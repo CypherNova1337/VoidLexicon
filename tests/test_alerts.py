@@ -276,7 +276,7 @@ class TestAlertTriageAnalyzer:
                    for f in findings)
 
     def test_severity_is_capped_at_medium(self, flood: pl.DataFrame) -> None:
-        """A ruleset's opinion must not outrank VoidAI's own measurements."""
+        """A ruleset's opinion must not outrank VoidLexicon's own measurements."""
         findings = AlertTriageAnalyzer().analyze(AnalysisContext(alerts=flood))
         assert findings
         assert all(f.severity.rank <= Severity.MEDIUM.rank for f in findings)

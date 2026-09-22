@@ -73,7 +73,7 @@ of its own name and guarded nothing for weeks.
 Anything needing a dissector or a build step goes behind an extra, like `[llm]` and
 `[tui]` already do.
 
-**10 · No execution path.** VoidAI proposes; a human disposes. Never add code that
+**10 · No execution path.** VoidLexicon proposes; a human disposes. Never add code that
 blocks an address, kills a process or edits a rule. Enforced by absence.
 
 **11 · No network at runtime.** Not for intel feeds, not for enrichment, not for

@@ -249,7 +249,7 @@ class TestPivotSelection:
         assert [q.dialect for q in queries] == [Dialect.SIGMA]
 
     def test_relational_predicates_yield_nothing(self) -> None:
-        """`precedes` describes VoidAI's own reasoning, not an indicator.
+        """`precedes` describes VoidLexicon's own reasoning, not an indicator.
 
         There is no field in any SIEM that holds "came before". Inventing a
         query for it would mean inventing an indicator, which is exactly the
@@ -343,7 +343,7 @@ class TestSigma:
         assert rule["level"] in _SIGMA_LEVELS
 
     def test_the_rule_id_is_a_uuid(self) -> None:
-        """Sigma requires a UUID; VoidAI IDs are not one.
+        """Sigma requires a UUID; VoidLexicon IDs are not one.
 
         A v5 derivation satisfies the schema without giving up reproducibility.
         """

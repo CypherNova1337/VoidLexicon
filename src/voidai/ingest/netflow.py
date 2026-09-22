@@ -4,7 +4,7 @@ The CTU-13 corpus and the wider Stratosphere malware captures publish
 bidirectional NetFlow exported by nfdump, with a ground-truth `Label` column
 appended. That makes them the most useful public source of *real* botnet
 command-and-control traffic carrying per-flow labels, and this parser is what
-lets VoidAI's benchmark run against them rather than only against its own
+lets VoidLexicon's benchmark run against them rather than only against its own
 synthetic corpus.
 
 The format is tab-separated, and has one quirk worth knowing: the flow

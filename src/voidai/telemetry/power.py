@@ -1,7 +1,7 @@
 """Energy accounting.
 
 The manifesto asks for AI that does not strain the power grid. A claim like
-that is worth nothing unless it is measured, so VoidAI measures itself and
+that is worth nothing unless it is measured, so VoidLexicon measures itself and
 prints the number next to every result.
 
 Three acquisition strategies, tried in order of fidelity:
@@ -52,7 +52,7 @@ class PlatformProfile:
         return f"{self.name}: {self.idle_watts:.1f} W idle + {self.active_watts_per_core:.1f} W/active-core ({self.note})"
 
 
-# Conservative published figures. Deliberately not tuned to flatter VoidAI:
+# Conservative published figures. Deliberately not tuned to flatter VoidLexicon:
 # where a range exists we take the higher draw, so estimates overstate rather
 # than understate our own consumption.
 _PROFILES: dict[str, PlatformProfile] = {

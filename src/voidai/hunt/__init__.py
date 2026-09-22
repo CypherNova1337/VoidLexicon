@@ -1,6 +1,6 @@
 """Turning findings into queries that run somewhere else.
 
-VoidAI analyses one sensor's window. A SIEM holds the estate's history. The
+VoidLexicon analyses one sensor's window. A SIEM holds the estate's history. The
 handoff between them is the point of this package: a typed proposition
 carries enough structure to be templated into a hunt without a model reading
 it and guessing what the indicator was.

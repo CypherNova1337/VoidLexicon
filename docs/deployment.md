@@ -1,6 +1,6 @@
 # Deployment
 
-VoidAI is architecture-agnostic: pure Python, no compiled extensions in the
+VoidLexicon is architecture-agnostic: pure Python, no compiled extensions in the
 core, and no dependency that lacks an `aarch64` wheel. It runs the same way on
 x86_64 and on ARM.
 
@@ -23,7 +23,7 @@ this repository — measured, not assumed; see the memory section below.
 
 ```bash
 sudo apt install -y python3-venv python3-dev
-git clone https://github.com/CypherNova1337/VoidAI && cd VoidAI
+git clone https://github.com/CypherNova1337/VoidLexicon && cd VoidLexicon
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 voidai doctor
@@ -160,7 +160,7 @@ stays open until it runs on the board.
 
 ### Getting *measured* energy
 
-The Pi 5 has no on-board power telemetry, so out of the box VoidAI reports
+The Pi 5 has no on-board power telemetry, so out of the box VoidLexicon reports
 `estimated` from a published power profile. To get a real number, put a
 current-sense breakout on the 5V rail. An INA219 or INA260 is the usual
 choice and costs a few pounds.
@@ -173,7 +173,7 @@ echo ina219 0x40 | sudo tee /sys/bus/i2c/devices/i2c-1/new_device
 
 That creates an hwmon device exposing `power1_input` in microwatts.
 `voidai doctor` should then report `measured`, and every receipt switches from
-`estimated` to `measured` automatically — VoidAI discovers hwmon power rails
+`estimated` to `measured` automatically — VoidLexicon discovers hwmon power rails
 without configuration.
 
 Verify by hand first:
@@ -208,7 +208,7 @@ CVE-2020-8694 these are root-readable only on most distributions:
 sudo chmod -R a+r /sys/class/powercap/intel-rapl
 ```
 
-Do that and VoidAI reports `measured` on ordinary hardware. Note that RAPL
+Do that and VoidLexicon reports `measured` on ordinary hardware. Note that RAPL
 covers the CPU package, not the whole board — it understates system draw,
 which is the safe direction for a project claiming efficiency.
 
@@ -233,12 +233,12 @@ Supported inputs:
 | Zeek `dns.log` | TSV or JSON, `.gz` accepted | DNS tunnelling |
 | nfdump labelled NetFlow | CTU-13 dialect | beaconing, fan-out |
 
-VoidAI reads logs. It does not capture traffic, and needs no privileged
+VoidLexicon reads logs. It does not capture traffic, and needs no privileged
 network access — point it at a sensor's output directory.
 
 ## Operating notes
 
-**No network access is required or used.** VoidAI runs with the interface
+**No network access is required or used.** VoidLexicon runs with the interface
 down; the test suite severs sockets and asserts the pipeline still completes.
 There are no update checks, no telemetry, and no runtime model downloads.
 

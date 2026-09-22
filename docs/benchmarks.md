@@ -199,7 +199,7 @@ records whose **median interval is 0.15 seconds**. Every interval statistic
 downstream measured record framing rather than the beacon, and the channel was
 rejected outright by the minimum-period gate.
 
-Interval distributions like this are strongly bimodal in log space. VoidAI now
+Interval distributions like this are strongly bimodal in log space. VoidLexicon now
 detects that with Otsu's method and coalesces bursts before measuring
 anything, recovering 183 check-ins at 33.3s. Unimodal series — well-formed
 connection logs — are left untouched.
@@ -247,7 +247,7 @@ channel is classified as a reply and silently deleted, taking the capture's
 only true positive with it. Measured, not theorised: findings dropped 618 →
 309 and detection went from yes to no.
 
-VoidAI drops a record only when its destination port is ≥32768 *and* the
+VoidLexicon drops a record only when its destination port is ≥32768 *and* the
 source port is lower. Findings fell to 395 and the C2 survived. A real service
 listening above 32768 and contacted from a lower port still produces spurious
 pairs; that is the accepted cost of never discarding a real channel.
@@ -417,7 +417,7 @@ problem. This analyzer does not try to decide which alerts are true. It
 reduces the flood to the few worth *correlating* and hands them on as one more
 opinion about a host — which is why `TRIGGERED_SIGNATURE` is capped at MEDIUM
 severity and never reaches HIGH on its own. A ruleset's opinion should not
-outrank VoidAI's own measurements.
+outrank VoidLexicon's own measurements.
 
 On a synthetic stream shaped like a real one — 60 hosts tripping policy and
 scan rules thousands of times, one host tripping two rare severe rules, and
@@ -788,7 +788,7 @@ rarity, on how long the conversation ran.
 All three numbers are real and none of them is evidence about whether the
 indicator is *true*. A host that contacted a known C2 once and a host that
 contacted it four thousand times have exactly the same intelligence behind
-them. Folding volume into the score would report VoidAI's own observation as
+them. Folding volume into the score would report VoidLexicon's own observation as
 though it corroborated the feed — the same circularity that keeps `precedes`
 out of the corroboration count.
 
@@ -1245,7 +1245,7 @@ arithmetic, and it tightens as behaviours are added: five behaviours produce
 four edges, each inheriting the confidence of a finding already counted.
 
 This is the argument section 8 already made for keeping observed volume out of
-an intel score — VoidAI's own observation may not be reported as though it
+an intel score — VoidLexicon's own observation may not be reported as though it
 corroborated the thing it was derived from — arriving from a different
 direction. It needed a second, narrower set, `non_evidential`, whose members
 contribute neither a multiplier nor a term:
@@ -1952,7 +1952,7 @@ needs a capture with labelled exfiltration in it, which is a data problem
 rather than a code one.
 
 **The estate has no identity, and it now costs a detection rather than only a
-false positive.** VoidAI does not know which of its hosts is a mail relay, a
+false positive.** VoidLexicon does not know which of its hosts is a mail relay, a
 resolver, or a domain controller. `147.32.84.229` ranks first on scenario 3
 because it reaches 162,612 destinations, which is exactly what a gateway does.
 The volume analyzer meets the same wall from the other side: its single false

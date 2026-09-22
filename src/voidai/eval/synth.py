@@ -1,11 +1,11 @@
 """Synthetic telemetry with ground truth.
 
 Public labelled beaconing corpora barely exist, and the ones that do are
-small, stale, and mostly unencrypted. So VoidAI generates its own: a
+small, stale, and mostly unencrypted. So VoidLexicon generates its own: a
 reproducible network of benign traffic with implants planted in known places,
 seeded so that any reviewer can regenerate the exact corpus a benchmark ran on.
 
-The generator is deliberately adversarial toward VoidAI. Benign traffic
+The generator is deliberately adversarial toward VoidLexicon. Benign traffic
 includes the categories that produce false positives in every published
 beaconing detector:
 
@@ -1687,7 +1687,7 @@ def build_demo_capture(directory: str | Path, seed: int = 1337) -> Path:
     # the signal that separates a generator from a host with unusual taste in
     # domain names. `_detect` prefers dns.log where both exist — so this file
     # is the one that drives the demo, and it carries the tunnel as well as
-    # the family. The passivedns file stays because it is a format VoidAI
+    # the family. The passivedns file stays because it is a format VoidLexicon
     # supports and the CTU-13 captures ship it, and dropping it would remove
     # the only demonstration of that parser.
     dga = DgaCorpusGenerator(seed=seed).generate(hours=6.0)

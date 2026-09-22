@@ -1,6 +1,6 @@
 # The IOC file format
 
-VoidAI reads threat intelligence from files an operator has placed on disk. It
+VoidLexicon reads threat intelligence from files an operator has placed on disk. It
 does not fetch feeds, resolve names, or open a socket for any purpose at
 runtime — the test suite severs sockets and asserts the pipeline still
 completes. If an indicator is to be matched, a file containing it has to be on
@@ -127,7 +127,7 @@ match every name beneath a whole TLD on the parent walk, so it is rejected.
 
 ## How a match is scored
 
-Not by a weighted geometric mean. Every other analyzer in VoidAI measures
+Not by a weighted geometric mean. Every other analyzer in VoidLexicon measures
 something and combines the measurements; this one performs a **join**, and a
 list membership is binary — the value is in the file or it is not.
 
@@ -178,7 +178,7 @@ and is gone before it can be written down.
 ### Severity is capped at MEDIUM
 
 A list membership is corroborating evidence, not a conclusion. A file dropped
-into a directory must not be able to outrank VoidAI's own measurements, which
+into a directory must not be able to outrank VoidLexicon's own measurements, which
 is the same rule `alerts.py` applies to a signature firing.
 
 ---

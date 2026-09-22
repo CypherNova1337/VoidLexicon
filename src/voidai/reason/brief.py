@@ -124,7 +124,7 @@ def build_brief(
     incident = ranked.incident
     # The incident's own order, not a fresh sort by confidence. A `precedes`
     # finding inherits the confidence of the observation it orders, so sorting
-    # on confidence alone lets VoidAI's own bookkeeping tie with the evidence
+    # on confidence alone lets VoidLexicon's own bookkeeping tie with the evidence
     # and take a slot from it under the cap. The correlator has already put
     # measured findings first and the derived chain last, in sequence.
     findings = incident.findings[:max_findings]

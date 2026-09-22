@@ -350,7 +350,7 @@ class AlertTriageAnalyzer(BaseAnalyzer):
             basis=score.basis(),
             # Deliberately capped at MEDIUM. A signature firing is corroborating
             # evidence, not a conclusion, and letting it reach HIGH on its own
-            # would put the ruleset's opinion above VoidAI's measurements.
+            # would put the ruleset's opinion above VoidLexicon's measurements.
             severity=(
                 Severity.MEDIUM if score.score >= self.config.high_threshold else Severity.LOW
             ),

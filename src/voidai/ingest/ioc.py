@@ -1,6 +1,6 @@
 """Local indicator-of-compromise files.
 
-Threat intelligence enters VoidAI exactly one way: as files an operator has
+Threat intelligence enters VoidLexicon exactly one way: as files an operator has
 already placed on disk. Nothing here retrieves a feed, resolves a name, or
 opens a socket. That is not a limitation waiting to be lifted — it is the same
 commitment as the rest of the runtime, and the test suite severs sockets and

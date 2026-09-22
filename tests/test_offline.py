@@ -1,10 +1,10 @@
 """The offline guarantee.
 
-The README states that VoidAI runs correctly with the network interface down
+The README states that VoidLexicon runs correctly with the network interface down
 and that the test suite asserts it. This is that assertion.
 
 Sockets are severed at the module level for the duration of each test, so any
-attempt to open a connection — by VoidAI, or by anything it imports and calls
+attempt to open a connection — by VoidLexicon, or by anything it imports and calls
 — raises instead of silently succeeding on a developer machine that happens to
 have connectivity.
 """
@@ -36,7 +36,7 @@ class NetworkAccessError(AssertionError):
 def no_network(monkeypatch: pytest.MonkeyPatch) -> None:
     def forbidden(*args: object, **kwargs: object) -> None:
         raise NetworkAccessError(
-            "VoidAI attempted a network connection. Nothing in the detection "
+            "VoidLexicon attempted a network connection. Nothing in the detection "
             "path may leave the machine."
         )
 
@@ -82,7 +82,7 @@ class TestPipelineRunsOffline:
 
         Threat intel is one HTTP call away from being much easier to build,
         and the whole architecture rests on it not being built that way. IOC
-        sets are files the operator places on disk; VoidAI reads them and
+        sets are files the operator places on disk; VoidLexicon reads them and
         never retrieves them.
         """
         corpus = CorpusGenerator(seed=1337).generate(hours=6.0)

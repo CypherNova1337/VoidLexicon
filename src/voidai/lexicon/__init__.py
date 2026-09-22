@@ -1,4 +1,4 @@
-"""The Lexicon: the typed language in which VoidAI is permitted to speak."""
+"""The Lexicon: the typed language in which VoidLexicon is permitted to speak."""
 
 from voidai.lexicon.models import (
     Artifact,

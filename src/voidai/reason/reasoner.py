@@ -1,6 +1,6 @@
 """The reasoning stage: brief in, verified commentary out.
 
-This is the only place in VoidAI where a language model runs, and it is
+This is the only place in VoidLexicon where a language model runs, and it is
 deliberately the smallest stage in the pipeline. It cannot detect anything, it
 cannot author a Finding, and it cannot reach an analyst without passing the
 verifier.

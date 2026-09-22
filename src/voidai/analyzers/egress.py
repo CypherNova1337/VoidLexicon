@@ -29,7 +29,7 @@ night one.
 
 The accepted cost is the mirror image: a transfer to a popular destination the
 host has used since before the capture opened will not be claimed as
-exfiltration here, however large it is. VoidAI sees one sensor's window, and
+exfiltration here, however large it is. VoidLexicon sees one sensor's window, and
 inside that window such traffic is the host's normal. That is a limit of the
 observation, and it is stated on the finding rather than papered over — the
 long-standing destination scores low on novelty, and the score says so.
@@ -698,7 +698,7 @@ class EgressAnalyzer(BaseAnalyzer):
 
         `egress_ratio: null` in a payload is the whole point of the exercise.
         A reader of an `exfiltrates_to` finding derived from NetFlow can see
-        that VoidAI measured how much left and how unusual the destination
+        that VoidLexicon measured how much left and how unusual the destination
         was, and never observed which direction the bytes travelled.
         """
         evidence = [
