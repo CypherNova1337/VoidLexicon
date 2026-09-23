@@ -359,7 +359,7 @@ class TestSeededCorpus:
 
         It is in the corpus on purpose: estate-wide rarity cannot defend
         against a large outbound destination that exactly one machine uses,
-        and no amount of tuning changes that — it needs asset context VoidAI
+        and no amount of tuning changes that — it needs asset context VoidLexicon
         does not have. Pinned here so the *count* cannot grow unnoticed while
         the limitation is written up as a single known case.
         """

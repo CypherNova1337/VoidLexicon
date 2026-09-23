@@ -678,7 +678,7 @@ def hunt(
 ) -> None:
     """Turn ranked incidents into queries you can run in a SIEM.
 
-    VoidAI sees one sensor's window; the SIEM holds the estate's history. So
+    VoidLexicon sees one sensor's window; the SIEM holds the estate's history. So
     the generated queries do not re-find the traffic that produced a finding —
     you already have that. They pivot on the *indicator* and exclude the host
     already known, which makes every row they return new information.
@@ -753,7 +753,7 @@ def hunt(
 
 @app.command()
 def lexicon() -> None:
-    """Print the complete grammar: everything VoidAI is able to say."""
+    """Print the complete grammar: everything VoidLexicon is able to say."""
     # Not expanded: on a narrow terminal `expand` steals width from the
     # fixed columns to feed the description and collapses the predicate name
     # to nothing. Sizing to content and letting the description wrap keeps
@@ -1109,7 +1109,7 @@ def doctor(
         best_available_source,
     )
 
-    table = Table(title="VoidAI pre-flight", title_justify="left", show_header=False)
+    table = Table(title="VoidLexicon pre-flight", title_justify="left", show_header=False)
     table.add_column(style="dim")
     table.add_column()
 

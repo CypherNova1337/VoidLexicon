@@ -1,6 +1,6 @@
 # The asset inventory file format
 
-An inventory answers one question: which machine held this address. VoidAI
+An inventory answers one question: which machine held this address. VoidLexicon
 reads it from a file an operator has placed on disk. It does not query DHCP,
 resolve names, consult a CMDB over the network, or infer the answer from the
 traffic in front of it — the same commitment as `docs/ioc.md`, for the same
@@ -176,7 +176,7 @@ reproducible: every ID in the Lexicon is content-addressed, so an age derived
 from `datetime.now()` would give the same run a different evidence ID every
 day, and last week's citations would resolve to nothing.
 
-A capture VoidAI cannot date — no timestamped records at all — has no window,
+A capture VoidLexicon cannot date — no timestamped records at all — has no window,
 and every mapping in it is reported as unjudged rather than judged against
 today.
 

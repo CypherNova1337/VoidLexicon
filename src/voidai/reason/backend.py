@@ -1,6 +1,6 @@
 """Model backends, and the grammar that constrains what they may emit.
 
-VoidAI targets open-weight models in the 1.7B-4B range, quantised to four
+VoidLexicon targets open-weight models in the 1.7B-4B range, quantised to four
 bits, running on CPU through llama.cpp. That tier is chosen on principle —
 small enough to run on hardware an individual owns, not a data centre — and
 the architecture is what makes it sufficient: the model is handed a few

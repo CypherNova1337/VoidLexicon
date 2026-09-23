@@ -1,6 +1,6 @@
 # Models
 
-The language layer is an **optional extra**. VoidAI detects, correlates and
+The language layer is an **optional extra**. VoidLexicon detects, correlates and
 ranks with it uninstalled, and `voidai run --no-llm` is a first-class path
 rather than a degraded one. What you lose without a model is the narrative and
 the suggested next steps. You do not lose a single finding.
@@ -29,7 +29,7 @@ curl -LO https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwe
 voidai run ./zeek-logs/ --model models/qwen2.5-1.5b-instruct-q4_k_m.gguf
 ```
 
-Weights are never committed and never downloaded at runtime. VoidAI has no
+Weights are never committed and never downloaded at runtime. VoidLexicon has no
 code path that fetches a model; you place the file, or there is no model.
 
 | Model | Size (Q4_K_M) | Licence | Notes |

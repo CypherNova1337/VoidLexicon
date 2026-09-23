@@ -442,7 +442,7 @@ class TestTheAnalyzer:
         """The load-bearing one.
 
         A match is a join, not a measurement. One flow and four thousand flows
-        carry the same intelligence, and letting VoidAI's own observation
+        carry the same intelligence, and letting VoidLexicon's own observation
         raise the score would report the capture as corroborating the feed.
         """
         indicators = _set(_indicator("45.83.220.17"), _indicator("203.0.113.9"))
@@ -480,7 +480,7 @@ class TestTheAnalyzer:
         """A list membership is corroborating evidence, not a conclusion.
 
         A file an operator dropped into a directory must not be able to
-        outrank VoidAI's own measurements.
+        outrank VoidLexicon's own measurements.
         """
         certain = _indicator(feed=_feed(declared_confidence=1.0), added=CAPTURE_DAY)
         ctx = AnalysisContext(

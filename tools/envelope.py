@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run a command inside a Raspberry Pi's resource envelope.
 
-This exists because the honest answer to "does VoidAI run on a Pi?" was, for
+This exists because the honest answer to "does VoidLexicon run on a Pi?" was, for
 most of this project's life, "we believe so". A believed number and a measured
 one are different things, and the whole design of this tool is an argument for
 saying which is which.

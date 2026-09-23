@@ -262,7 +262,7 @@ class TestQueue:
 class TestTemporalOrdering:
     """`precedes`: turning an incident's set of findings into a sequence.
 
-    Most of these are about what it must *not* do. Ordering is VoidAI
+    Most of these are about what it must *not* do. Ordering is VoidLexicon
     reasoning about findings already inside the incident, so every path by
     which it could feed back into that incident's own score is a bug.
     """
@@ -474,7 +474,7 @@ class TestTemporalOrdering:
         ones sort at zero, so on any ordinary capture the split falls out of
         the times alone and the explicit flag looks redundant. It is not: a
         sensor with an unset clock writes 1970, and then every key collides at
-        zero and only the flag keeps VoidAI's bookkeeping below the evidence.
+        zero and only the flag keeps VoidLexicon's bookkeeping below the evidence.
         Found by deleting the flag and watching nothing fail.
         """
         epoch = (datetime(1970, 1, 1, tzinfo=timezone.utc) - T0).total_seconds()

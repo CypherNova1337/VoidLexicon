@@ -34,7 +34,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# The language layer. Optional on purpose: VoidAI performs its full detection
+# The language layer. Optional on purpose: VoidLexicon performs its full detection
 # and correlation pipeline with this uninstalled. See `voidai run --no-llm`.
 llm = [
     "llama-cpp-python>=0.3.0",
@@ -57,8 +57,8 @@ dev = [
 voidai = "voidai.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/CypherNova1337/VoidAI"
-Repository = "https://github.com/CypherNova1337/VoidAI"
+Homepage = "https://github.com/CypherNova1337/VoidLexicon"
+Repository = "https://github.com/CypherNova1337/VoidLexicon"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/voidai"]

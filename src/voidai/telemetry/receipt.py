@@ -1,6 +1,6 @@
 """The run receipt.
 
-Every VoidAI investigation ends with an itemised bill: what it cost in time,
+Every VoidLexicon investigation ends with an itemised bill: what it cost in time,
 in CPU, in memory, in tokens, and in joules. Printed by default, not hidden
 behind a verbose flag.
 

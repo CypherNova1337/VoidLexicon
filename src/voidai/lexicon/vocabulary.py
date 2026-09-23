@@ -1,11 +1,11 @@
-"""The vocabulary: everything VoidAI is capable of saying.
+"""The vocabulary: everything VoidLexicon is capable of saying.
 
     "The limits of my language mean the limits of my world."
 
 This module is that limit, made executable. An analyzer or a language model
 may only assert a proposition built from a `Predicate` defined here, applied
 to entity types this grammar permits. There is no free-text assertion path
-into a VoidAI report.
+into a VoidLexicon report.
 
 The practical consequence: a language model cannot invent a new kind of
 accusation. It can rank, narrate, and connect propositions that the
@@ -63,7 +63,7 @@ _SEVERITY_RANK: dict[Severity, int] = {
 
 
 class Predicate(str, Enum):
-    """The verbs. This is the complete set of assertions VoidAI can make."""
+    """The verbs. This is the complete set of assertions VoidLexicon can make."""
 
     # Network behaviour
     BEACONS_TO = "beacons_to"

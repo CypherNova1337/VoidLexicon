@@ -8,7 +8,7 @@ true positive at rank 358. Detected and invisible are the same thing to an
 analyst working a queue.
 
 The instinct is to tighten the detector. That is wrong, and the data says so:
-the high-scoring findings VoidAI cannot rank below the C2 are *genuinely*
+the high-scoring findings VoidLexicon cannot rank below the C2 are *genuinely*
 beacon-like — perfectly regular, uniform payload, single-host destinations.
 They are monitoring agents, backup jobs and keep-alives. No refinement of a
 periodicity measure separates them, because on the axis of periodicity they
@@ -58,7 +58,7 @@ behaviours in observed order and emits `precedes` between adjacent ones, so
 the language layer can say "swept a port, then beaconed, then transferred"
 rather than listing three things that happened to the same machine.
 
-Those edges are VoidAI's own reasoning about findings already in the incident,
+Those edges are VoidLexicon's own reasoning about findings already in the incident,
 not new observations of the host, and they are kept out of the arithmetic
 entirely — see `CorrelationConfig.non_evidential`.
 """
@@ -106,7 +106,7 @@ class CorrelationConfig:
     #: rule at different levels — see engineering rule 6.
     #:
     #: `shares_infrastructure_with` and `precedes` describe the environment,
-    #: or VoidAI's own reasoning about two observations. They are bookkeeping,
+    #: or VoidLexicon's own reasoning about two observations. They are bookkeeping,
     #: and a pair of bookkeeping entries is not two opinions.
     #:
     #: `contacts_rare_destination` is a real observation about the host, but
@@ -174,7 +174,7 @@ class CorrelationConfig:
     #: `non_corroborating` above, and for a different reason.
     #:
     #: Everything in `non_corroborating` is still an observation about the
-    #: world that VoidAI did not derive from its own output, so raising the
+    #: world that VoidLexicon did not derive from its own output, so raising the
     #: incident's combined confidence with it is sound. `precedes` is not.
     #: The correlator mints it from findings that are *already inside the
     #: incident*, so admitting it to the noisy-OR would let an incident raise
@@ -187,7 +187,7 @@ class CorrelationConfig:
     #: and `precedes` was already kept out of that. The same circularity runs
     #: through the noisy-OR, which is the half that had no guard — and it is
     #: the same argument `docs/benchmarks.md` §8 makes for keeping observed
-    #: volume out of an intel score: VoidAI's own observation may not be
+    #: volume out of an intel score: VoidLexicon's own observation may not be
     #: reported as though it corroborated the thing it was derived from.
     #:
     #: This is not a discount on the claim. A `precedes` finding is asserted
@@ -391,7 +391,7 @@ def _finding_order(
     **Measured before derived.** A `precedes` finding inherits the confidence
     of the observation it orders, so on confidence alone it ties with the
     strongest thing in the incident and floats to the top of a display that
-    shows four findings out of eleven — putting VoidAI's bookkeeping above the
+    shows four findings out of eleven — putting VoidLexicon's bookkeeping above the
     evidence. The language layer protects facts first when it runs out of
     budget, and an ordering is not a fact about the host.
 

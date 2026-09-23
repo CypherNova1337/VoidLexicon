@@ -13,7 +13,7 @@ flows carried it, how rare the destination is, how long the conversation ran.
 Every one of those numbers is real, and not one of them is evidence about
 whether the indicator is *true*. A host that contacted a known C2 once and a
 host that contacted it four thousand times have the same intelligence backing
-them. Letting volume raise the score would be reporting VoidAI's own
+them. Letting volume raise the score would be reporting VoidLexicon's own
 observation as though it corroborated the feed's claim, which is the same
 circularity `precedes` is kept out of the corroboration count to prevent.
 
@@ -62,7 +62,7 @@ is fresh", which nobody measured.
 
 Severity is capped at MEDIUM for the same reason `alerts.py` caps its own: a
 list membership is corroborating evidence, not a conclusion, and a file an
-operator dropped in a directory must not be able to outrank VoidAI's
+operator dropped in a directory must not be able to outrank VoidLexicon's
 measurements.
 
 ## `shares_infrastructure_with`
