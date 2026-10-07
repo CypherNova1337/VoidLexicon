@@ -267,6 +267,37 @@ class _Pivot:
         return f"{self.suffix_separator}{self.value}" if self.match == "suffix" else self.value
 
 
+def _source_address(finding: Finding) -> str | None:
+    """The address a network hunt excludes as the host already found.
+
+    A network hunt groups and excludes by a *source address* column. Before
+    the asset inventory, a network finding's subject was always that address.
+    Since it, the subject may be the hostname the inventory resolved it to —
+    and a hostname written into `src_ip` compares against a column of
+    addresses, matches nothing, and leaves a filter in the rule that silently
+    excludes nobody.
+
+    The address is recovered from the finding's own `asset_inventory`
+    evidence, which records the address and hostname the mapping joined. A
+    hostname with no such link has no address this finding can vouch for, so
+    nothing is excluded: the query then returns the known host as well, which
+    is visible, rather than carrying a filter that pretends to remove it.
+    """
+    subject = finding.subject
+    if subject.type is EntityType.IP:
+        return subject.value
+    if subject.type is EntityType.HOST:
+        for evidence in finding.evidence:
+            if evidence.kind != "asset_inventory":
+                continue
+            if evidence.payload.get("hostname") != subject.value:
+                continue
+            address = evidence.payload.get("address")
+            if isinstance(address, str) and address:
+                return address
+    return None
+
+
 def _pivot_for(finding: Finding) -> _Pivot | None:
     """Decide what indicator a finding offers, and what to ask about it.
 
@@ -308,7 +339,7 @@ def _pivot_for(finding: Finding) -> _Pivot | None:
     if target is None:
         return None
 
-    source = subject.value if subject.type in (EntityType.HOST, EntityType.IP) else None
+    source = _source_address(finding)
 
     if finding.predicate in (
         Predicate.BEACONS_TO,

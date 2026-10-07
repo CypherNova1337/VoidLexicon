@@ -33,6 +33,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
+#: The narrative's length bound in `RESPONSE_GRAMMAR`, named so the code that
+#: has to recognise a narrative cut off by it can refer to it. A test holds the
+#: two in step.
+NARRATIVE_CHAR_LIMIT = 420
+
 #: GBNF grammar pinning the response to the Lexicon's reporting schema.
 #:
 #: One rule per line: llama.cpp's GBNF parser terminates a rule at the

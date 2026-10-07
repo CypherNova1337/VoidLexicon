@@ -353,6 +353,67 @@ class TestReasoner:
         assert usage.total > 0
         assert usage.invocations == 1
 
+    @staticmethod
+    def _narrate(narrative: str) -> str | None:
+        backend = ScriptedBackend([response(narrative=narrative)])
+        result = Reasoner(backend=backend).explain_queue(build_queue([beacon()]).incidents)[0]
+        return result.incident.narrative
+
+    def test_a_narrative_cut_by_its_bound_ends_on_a_complete_sentence(self) -> None:
+        """The grammar stops the model at the bound wherever it is, which on
+        Qwen2.5-1.5B produced "part of a larger, pre" in the demo. The fragment
+        goes; every complete sentence before it stays. The decimal in the
+        fragment must not be mistaken for a sentence end."""
+        from voidai.reason.backend import NARRATIVE_CHAR_LIMIT
+
+        kept = "The host beacons on a schedule. It checks in every minute."
+        fragment = " It reached the destination at 0.98 confidence and is part of a larger, pre"
+        cut = (kept + fragment + " padding" * 80)[:NARRATIVE_CHAR_LIMIT]
+        assert len(cut) == NARRATIVE_CHAR_LIMIT
+
+        assert self._narrate(cut) == kept
+
+    def test_a_narrative_that_ended_on_its_own_is_left_as_written(self) -> None:
+        """Only the bound triggers the trim. A short narrative with no closing
+        full stop is complete, and cutting it back would delete a sentence."""
+        written = "The host beacons on a schedule. It should be isolated"
+        assert self._narrate(written) == written
+
+    def test_a_bound_inside_the_first_sentence_is_marked_not_emptied(self) -> None:
+        """With no complete sentence to fall back to, emptying the narrative
+        would lose all of it. The text stays, and an ellipsis shows it was
+        stopped rather than finished."""
+        from voidai.reason.backend import NARRATIVE_CHAR_LIMIT
+
+        run_on = ("the host beacons and scans and resolves " * 20)[:NARRATIVE_CHAR_LIMIT]
+        narrated = self._narrate(run_on)
+        assert narrated is not None
+        assert narrated.endswith("…")
+        assert narrated[:-1] == run_on.rstrip()
+
+    def test_an_invented_address_in_the_fragment_still_strikes_the_narrative(self) -> None:
+        """Trimming must not launder a fabrication. If the cut-off fragment
+        names an address the evidence does not, the narrative is struck as it
+        would have been — the trim runs after the verifier, not before it."""
+        from voidai.reason.backend import NARRATIVE_CHAR_LIMIT
+
+        kept = "The host beacons on a schedule."
+        fragment = " It also reached 198.51.100.99 and then"
+        cut = (kept + fragment + " padding" * 80)[:NARRATIVE_CHAR_LIMIT]
+
+        backend = ScriptedBackend([response(narrative=cut)])
+        result = Reasoner(backend=backend).explain_queue(build_queue([beacon()]).incidents)[0]
+        assert result.report.narrative_struck
+        assert result.incident.narrative is None
+
+    def test_the_trim_threshold_is_the_grammar_bound(self) -> None:
+        """The constant and the grammar are two statements of one number. If
+        the grammar's bound moves alone, every narrative cut by it is missed."""
+        from voidai.reason.backend import NARRATIVE_CHAR_LIMIT, RESPONSE_GRAMMAR
+
+        rule = next(ln for ln in RESPONSE_GRAMMAR.splitlines() if ln.startswith("narrative ::="))
+        assert f"char{{1,{NARRATIVE_CHAR_LIMIT}}}" in rule
+
     def test_model_never_receives_raw_logs(self) -> None:
         """Asserted on the prompt actually sent, not on the brief in isolation."""
         backend = ScriptedBackend([response()])

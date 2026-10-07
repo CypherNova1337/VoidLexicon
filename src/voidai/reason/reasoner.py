@@ -13,11 +13,13 @@ trusting, which is why nothing here is trusted.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from voidai.correlate import RankedIncident
 from voidai.lexicon import Incident
 from voidai.reason.backend import (
+    NARRATIVE_CHAR_LIMIT,
     SYSTEM_PROMPT,
     USER_TEMPLATE,
     ReasoningBackend,
@@ -26,6 +28,28 @@ from voidai.reason.backend import (
 from voidai.reason.brief import EvidenceBrief, build_brief
 from voidai.reason.verifier import VerificationReport, verify
 from voidai.telemetry import TokenUsage
+
+_SENTENCE_END = re.compile(r"[.!?](?=\s|$)")
+
+
+def _drop_unfinished_sentence(narrative: str) -> str:
+    """Remove the fragment a narrative is left with when it hits its length bound.
+
+    The grammar stops the model at `NARRATIVE_CHAR_LIMIT` characters wherever it
+    happens to be, which is usually mid-word — "part of a larger, pre". That
+    fragment says nothing and reads as a defect, so it is cut back to the last
+    complete sentence. Applied only to a narrative that reached the bound: one
+    that ended on its own is left exactly as written, full stop or not.
+
+    When the bound fell inside the first sentence there is nothing complete to
+    keep, so the text stays and an ellipsis marks where it was stopped.
+    """
+    if len(narrative) < NARRATIVE_CHAR_LIMIT:
+        return narrative
+    ends = list(_SENTENCE_END.finditer(narrative))
+    if not ends:
+        return narrative.rstrip() + "…"
+    return narrative[: ends[-1].end()]
 
 
 @dataclass
@@ -91,6 +115,9 @@ class Reasoner:
             findings=ranked.incident.findings,
             citable_ids=brief.citable_ids,
         )
+        # Trimmed after verification, never before: an invented address in the
+        # fragment must still strike the narrative, not be cut away unseen.
+        report.narrative = _drop_unfinished_sentence(report.narrative)
 
         # Only verified commentary is attached to the Incident. The struck
         # claims stay on the report for audit, not on the record.

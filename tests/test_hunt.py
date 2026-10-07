@@ -332,6 +332,81 @@ class TestPivotSelection:
             assert source.id in query.query, "provenance must survive a copy-paste"
 
 
+def _resolved_beacon(
+    hostname: str = "FINANCE-WS04",
+    address: str = "10.0.1.14",
+    mapped_hostname: str | None = None,
+    with_mapping: bool = True,
+) -> Finding:
+    """A network finding whose subject the asset inventory renamed to a host.
+
+    The shape the pipeline produces once an inventory resolves an address:
+    the subject is the hostname, and the mapping travels as its own evidence.
+    """
+    evidence = [_evidence("interval_regularity")]
+    if with_mapping:
+        evidence.append(
+            Evidence(
+                kind="asset_inventory",
+                summary=f"{address} is {mapped_hostname or hostname}, per register",
+                payload={"address": address, "hostname": mapped_hostname or hostname},
+                artifacts=[Artifact(source="assets.inv", locator="line:6")],
+            )
+        )
+    return Finding(
+        predicate=Predicate.BEACONS_TO,
+        subject=Entity(type=EntityType.HOST, value=hostname),
+        object=Entity(type=EntityType.IP, value="45.83.220.17"),
+        evidence=evidence,
+        confidence=0.9,
+        basis="synthetic",
+        analyzer="test@0",
+    )
+
+
+class TestResolvedSubject:
+    """A network hunt excludes by source *address*, whatever the subject is called.
+
+    Once the inventory renames `10.0.1.14` to `FINANCE-WS04`, writing the
+    subject into `src_ip` produced `src_ip: "FINANCE-WS04"` — a hostname
+    compared against a column of addresses, which matches nothing, so the
+    filter that claims to exclude the known host excludes nobody.
+    """
+
+    def test_the_excluded_source_is_the_mapped_address_in_every_dialect(self) -> None:
+        queries = {q.dialect: q.query for q in queries_for(_resolved_beacon())}
+        assert 'src_ip: "10.0.1.14"' in queries[Dialect.SIGMA]
+        assert 'SourceIP != "10.0.1.14"' in queries[Dialect.KQL]
+        assert 'src_ip!="10.0.1.14"' in queries[Dialect.SPL]
+        assert "known='10.0.1.14'" in queries[Dialect.ZEEK]
+        for text in queries.values():
+            assert "FINANCE-WS04" not in text
+
+    def test_a_hostname_with_no_mapping_excludes_nobody(self) -> None:
+        """No address the finding can vouch for, so no filter at all — the
+        query returns the known host too, which an analyst can see, rather
+        than carrying a filter that pretends to remove it."""
+        queries = {q.dialect: q.query for q in queries_for(_resolved_beacon(with_mapping=False))}
+        rule = yaml.safe_load(queries[Dialect.SIGMA])
+        assert "filter_known" not in rule["detection"]
+        assert rule["detection"]["condition"] == "selection"
+        assert "!=" not in queries[Dialect.KQL]
+        assert "known=" not in queries[Dialect.ZEEK]
+
+    def test_a_mapping_for_another_host_is_not_borrowed(self) -> None:
+        """The address must belong to *this* subject. A mapping naming some
+        other machine says nothing about which address this one used."""
+        stray = _resolved_beacon(mapped_hostname="MAIL-RELAY-01")
+        rule = yaml.safe_load(
+            next(q.query for q in queries_for(stray) if q.dialect is Dialect.SIGMA)
+        )
+        assert "filter_known" not in rule["detection"]
+
+    def test_an_address_subject_is_unchanged(self) -> None:
+        sigma = next(q.query for q in queries_for(beacon()) if q.dialect is Dialect.SIGMA)
+        assert 'src_ip: "10.0.1.14"' in sigma
+
+
 class TestSigma:
     @pytest.mark.parametrize(
         "produce", [beacon, tunnel, scan, signature], ids=lambda f: f.__name__
@@ -684,6 +759,22 @@ class TestCommand:
         assert rules, "no Sigma rules in the output"
         for rule in rules:
             assert yaml.safe_load(rule)["detection"]["condition"]
+
+    def test_every_address_exclusion_is_an_address(self, capture: Path) -> None:
+        """End to end, with the capture's own asset inventory applied.
+
+        The pipeline test above builds its context without an inventory, so
+        it never saw a subject the inventory had renamed — which is how a
+        hostname reached `src_ip` in every network rule unnoticed. This runs
+        the command an operator runs, on a capture that carries an `.inv`.
+        """
+        import ipaddress
+
+        output = self._invoke("hunt", str(capture), "--no-receipt")
+        excluded = re.findall(r'^\s+src_ip: "([^"]+)"$', output, flags=re.M)
+        assert excluded, "no source exclusions generated at all"
+        for value in excluded:
+            ipaddress.ip_address(value)  # raises on a hostname
 
     def test_files_are_written_and_parse(self, capture: Path, tmp_path: Path) -> None:
         out = tmp_path / "rules"
