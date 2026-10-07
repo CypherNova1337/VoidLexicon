@@ -242,33 +242,37 @@ real botnet captures on a university network, with per-flow ground truth.
 
 | | CTU-13 #3 (Rbot, 66.8h) | CTU-13 #6 (Menti, 2.15h) |
 |---|---|---|
-| Flows | 12,689,947 | 1,916,655 |
-| **Infected host, queue rank** | **2 of 247** | **1 of 160** |
-| Findings → incidents | 1589 → 247 | 512 → 160 |
+| Flows | 10,159,384 | 1,605,474 |
+| **Infected host, queue rank** | **2 of 275** | **1 of 176** |
+| Findings → incidents | 2253 → 275 | 596 → 176 |
 | Corroborated incidents | 3 | 1 |
-| Throughput | 207k rec/s | 180k rec/s |
-| Peak RSS | 2.6 GB | 0.6 GB |
+| Throughput | 114k rec/s | 105k rec/s |
+| Peak RSS | 2.7 GB | 0.6 GB |
 
-Three analyzers, and the two rows that matter are the two that did not move
-when the third was added: the infected host holds rank 2 and rank 1 against
-larger queues, and corroborated incidents stay at 3 and 1. Peak memory is flat
-within 10 MB — analyzers run sequentially and release, so the cost of adding
-one is `max`, not `sum`.
+Re-measured in October 2026 after a parser correction. These files pad a short
+field with an extra tab so their columns line up on screen, and the first
+parser read them positionally: 29% of scenario 6's rows and 41% of scenario
+3's were misread, and earlier versions of this table were measured on them.
+Read correctly, the two rows that matter held — the infected host is still
+rank 2 and rank 1, and corroborated incidents are still 3 and 1. Throughput
+fell, partly because the parser now normalises each line before splitting it,
+and partly because traffic that had collapsed onto one false destination is
+now spread across real ones.
 
 Reproduce with `voidai bench` and `voidai bench --real <capture>`.
 
-**Ranking is the whole game.** Beaconing alone put the scenario 6 C2 at rank
-358 of 395 — detected and invisible are the same thing to an analyst working a
+**Ranking is the whole game.** Beaconing alone puts the scenario 6 C2 at rank
+376 of 415 — detected and invisible are the same thing to an analyst working a
 queue. The fix was not a better periodicity measure: the findings outranking
 it were *genuinely* beacon-like monitoring agents and backup jobs. What
 separates a compromised host is that it does several suspicious things at
 once. A second analyzer plus correlation by corroboration moved it to rank 1.
 
 [`docs/benchmarks.md`](docs/benchmarks.md) has the full account, including the
-three real bugs that only real captures exposed — among them a beaconing
-signal that turned out to be measuring an artifact of our own synthetic
-generator, and a textbook flow-orientation rule that silently deleted the one
-true positive in a capture.
+real bugs that only real captures exposed — among them a beaconing signal that
+turned out to be measuring an artifact of our own synthetic generator, a
+textbook flow-orientation rule that silently deleted the one true positive in
+a capture, and the padded columns above.
 
 ---
 
@@ -342,15 +346,15 @@ the core is six libraries.
 
 **"Fits on a Pi" is measured, not asserted.** `tools/envelope.py` runs the
 pipeline inside a cgroup whose memory limit and swap are pinned together — the
-mechanism a board with no swap enforces. It corrected this README: the 66-hour,
-12.7M-flow capture was documented as needing more than a 4GB board, and in fact
-is OOM-killed at 2,400 MB, flaky at exactly 2,500 MB, and completes reliably
-from 2,600 MB. Held to 3 GB and a **single** core it still finishes in 166 s
-and still returns the infected host at **rank 2 — the unconstrained result**
-(measured with two analyzers; the queue is 247 deep with three). `voidai demo` runs in 512 MB. This is not an ARM test and is not
+mechanism a board with no swap enforces. It corrected this README: the 66-hour
+capture was documented as needing more than a 4GB board, and in fact completes
+inside a 2,200 MB ceiling, peaking near 2.1 GB, which leaves a 4GB board
+roughly 1.5 GB spare. Held to 3 GB and a **single** core it takes six minutes
+and still returns the infected host at **rank 2 — the unconstrained result**.
+`voidai demo` completes inside 192 MB. This is not an ARM test and is not
 offered as one; see [`docs/deployment.md`](docs/deployment.md).
 
-**Small by construction.** The target model tier is 1.7B–4B parameters at
+**Small by construction.** The target model tier is 1.5B–4B parameters at
 4-bit quantisation. If a finding requires a larger model, the correct fix is a
 better analyzer, not a bigger model.
 

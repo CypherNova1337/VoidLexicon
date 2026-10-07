@@ -539,16 +539,26 @@ def _bench_real(path: Path, limit: int) -> None:
         f"{len(result.queue.corroborated)} corroborated",
     )
     table.add_row("pair precision", f"{result.pair_precision:.4f} ({len(detected)} on labelled pairs)")
-    table.add_row(
-        "ground truth",
-        f"{len(result.botnet_pairs):,} botnet pairs · {len(result.infected_hosts)} infected hosts",
-    )
+    if scenario.documented_infected:
+        count = len(result.infected_hosts)
+        infected = f"{count} documented infected host{'' if count == 1 else 's'}"
+        if result.label_sources != result.infected_hosts:
+            infected += f" ({len(result.label_sources):,} sources carry the label)"
+    else:
+        infected = f"{len(result.infected_hosts):,} infected hosts, from the labels alone"
+    table.add_row("ground truth", f"{len(result.botnet_pairs):,} botnet pairs · {infected}")
     console.print()
     console.print(table)
     console.print(
         "\n[dim]'Background' in CTU-13 means unlabelled, not benign, so pair precision is a "
         "lower bound rather than an estimate. See docs/benchmarks.md.[/dim]"
     )
+    if scenario.documented_infected:
+        console.print(
+            "[dim]A label marks the botnet's traffic, not which end is the bot, so servers "
+            "that answered it carry the label too. Infected hosts are the ones the CTU-13 "
+            "authors document, confirmed by the labels.[/dim]"
+        )
     _render_queue(result.queue, limit=10)
     _render_receipt(result.receipt)
 

@@ -25,10 +25,10 @@ than silence. An invented IP address reads exactly like a real one, and an
 analyst who finds one invention stops trusting the other ninety-nine findings.
 
 The second problem kills more deployments. Detectors that work produce more
-alerts than anyone can read. During development, VoidLexicon's own beaconing
-analyzer found the command-and-control channel in a real botnet capture and
-buried it at **rank 358 of 395**. Detected and invisible are the same thing to
-an analyst working a queue.
+alerts than anyone can read. VoidLexicon's own beaconing analyzer finds the
+command-and-control channel in a real botnet capture and, on its own, ranks it
+**376th of 415**. Detected and invisible are the same thing to an analyst
+working a queue.
 
 ## 2. The central idea
 
@@ -109,25 +109,27 @@ shell is executed in the test suite against hostile input.
 
 | | Scenario 3 (Rbot, 66.8h) | Scenario 6 (Menti, 2.15h) |
 |---|---|---|
-| Flows analysed | 12,689,947 | 1,916,655 |
-| **Infected host, queue rank** | **2 of 247** | **1 of 160** |
-| Findings → incidents | 1589 → 247 | 512 → 160 |
-| Throughput · peak memory | 207k rec/s · 2.7 GB | 180k rec/s · 0.6 GB |
+| Flows analysed | 10,159,384 | 1,605,474 |
+| **Infected host, queue rank** | **2 of 275** | **1 of 176** |
+| Findings → incidents | 2253 → 275 | 596 → 176 |
+| Throughput · peak memory | 114k rec/s · 2.7 GB | 105k rec/s · 0.6 GB |
 
-Ranking is the whole story. Beaconing alone put scenario 6's C2 at 358 of 395;
-the findings above it were *genuinely* beacon-like monitoring agents. What
+Ranking is the whole story. Beaconing alone puts scenario 6's C2 at 376 of 415;
+the findings above it are *genuinely* beacon-like monitoring agents. What
 separates a compromised host is that it does several suspicious things at once.
+The rank is the bot the CTU-13 authors document, confirmed by the labels.
 
 **Real specificity.** Across 3,655 real DNS records from 18 hosts, the
 tunnelling analyzer emits nothing.
 
 **Inside a Pi's envelope, measured.** `tools/envelope.py` runs the pipeline in
 a cgroup with memory and swap pinned to one value — what a swapless board
-enforces. The 66-hour capture is killed at 2,200 MB and completes from
-2,400 MB with all eight analyzers — no higher than with four, because analyzers
-run one at a time and release. A 4GB board clears it with ~1.1 GB spare. `voidai demo` completes inside 192 MB. This is not
-an ARM test — the kernel reproduces memory and cores exactly; the instruction
-set cannot be.
+enforces. The 66-hour capture completes inside 2,200 MB with all eight
+analyzers, peaking near 2.1 GB, and returns the infected host at its
+unconstrained rank: a 4GB board clears it with ~1.5 GB spare. Held to one core
+it takes six minutes and still ranks the host second. `voidai demo` completes
+inside 192 MB. This is not an ARM test — the kernel reproduces memory and cores
+exactly; the instruction set cannot be.
 
 **The language layer.** Qwen2.5-1.5B at 4-bit on four CPU threads: 256-token
 brief, 188-token response, 28.9 s, **zero struck claims**.
@@ -182,7 +184,10 @@ because the generator shared the detector's assumptions. A symmetry measure
 that scored our own generator's jitter rather than C2; a beacon arriving as 384
 NetFlow records with a 0.15-second median interval; the textbook "server has
 the lower port" rule, which deletes scenario 6's only true positive; and
-`"Not Suspicious Traffic"` matching the word it negates. Each is written up in
+`"Not Suspicious Traffic"` matching the word it negates. Found last: the files
+pad a short field with an extra tab, and the parser misread up to 41% of rows
+until that was corrected. The CTU-13 results above are re-measured on the
+corrected parse, and the ranks held. Each is written up in
 [`benchmarks.md`](benchmarks.md) with the measurement that exposed it.
 
 ## 8. Reproducing everything

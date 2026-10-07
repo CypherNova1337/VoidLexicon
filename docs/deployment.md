@@ -225,13 +225,21 @@ voidai run ./capture/ --evidence           # with the full chain of custody
 voidai run ./capture/ --model models/qwen2.5-1.5b-instruct-q4_k_m.gguf
 ```
 
-Supported inputs:
+Supported inputs — everything `voidai run` reads from the directory it is
+given:
 
-| Source | Format | Analyzers fed |
+| Source | Files | Analyzers fed |
 |---|---|---|
-| Zeek `conn.log` | TSV or JSON, `.gz` accepted | beaconing, fan-out |
-| Zeek `dns.log` | TSV or JSON, `.gz` accepted | DNS tunnelling |
-| nfdump labelled NetFlow | CTU-13 dialect | beaconing, fan-out |
+| Zeek `conn.log` | TSV or JSON, rotated `.gz` accepted | beaconing, fan-out, volume and egress |
+| Zeek `dns.log`, or passivedns | `dns.log`, else `*.passivedns` | DNS tunnelling, DGA |
+| Zeek `ssl.log` | JA3 fingerprints need Zeek's JA3 package | TLS fingerprint rarity |
+| Suricata EVE | `eve*.json`, `*.eve.json`, `alerts*.json` | alert triage |
+| Sysmon process events | `sysmon*.json[l]`, `*.sysmon.json[l]`, `.gz` accepted | host |
+| Threat intel | `*.ioc`, or `--intel <path>` | threat intel |
+| Asset inventory | `*.inv`, or `--inventory <path>` | joins addresses to hostnames |
+
+Labelled NetFlow in the CTU-13 dialect is read by `voidai bench --real`, for
+scoring against ground truth, and not by `voidai run`.
 
 VoidLexicon reads logs. It does not capture traffic, and needs no privileged
 network access — point it at a sensor's output directory.

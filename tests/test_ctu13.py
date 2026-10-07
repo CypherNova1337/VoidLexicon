@@ -245,3 +245,78 @@ class TestHarnessEndToEnd:
     def test_ground_truth_never_reaches_the_analyzers(self, tiny_capture: Path) -> None:
         """Asserted inside `evaluate`; this is the test that runs the assertion."""
         assert evaluate(tiny_capture, SCENARIOS["scenario06"]).botnet_pairs == {(INFECTED, C2)}
+
+
+#: Verbatim from scenario 6: a DNS server answering the bot. Labelled `Botnet`
+#: because it is the botnet's traffic — the label does not say which end is
+#: the bot — and padded after the source, as short endpoints are.
+_SERVER_REPLY = (
+    "2011-08-16 10:02:08.871\t0.000\tUDP\t147.32.80.9:53\t\t->\t147.32.84.165:1025\tINT"
+    "\t0\t1\t427\t1\tBotnet\n"
+)
+_DNS_SERVER = "147.32.80.9"
+
+
+class TestInfectedHosts:
+    """A host is infected when the authors document it and the labels agree.
+
+    Read as "every source of a labelled flow", scenario 3 has 3,347 infected
+    hosts — a DNS server among them — for a capture documented as having one
+    bot. The first parser hid that by accident: padded rows lost their labels,
+    and server endpoints are the short ones that get padded.
+    """
+
+    @pytest.fixture
+    def capture_with_reply(self, tiny_capture: Path) -> Path:
+        tiny_capture.write_text(tiny_capture.read_text() + _SERVER_REPLY)
+        return tiny_capture
+
+    def test_a_server_that_answered_the_bot_is_not_infected(
+        self, capture_with_reply: Path
+    ) -> None:
+        result = evaluate(capture_with_reply, SCENARIOS["scenario06"])
+        assert _DNS_SERVER in result.label_sources, "the reply must parse with its label"
+        assert result.infected_hosts == {INFECTED}
+        assert _DNS_SERVER not in result.flagged_infected_hosts
+
+    def test_an_undocumented_capture_falls_back_to_the_labels(
+        self, capture_with_reply: Path
+    ) -> None:
+        from voidai.eval.ctu13 import Scenario
+
+        unknown = Scenario(key="unknown", filename="x", malware="unknown", duration_hours=0.0)
+        result = evaluate(capture_with_reply, unknown)
+        assert result.infected_hosts == result.label_sources
+        assert {INFECTED, _DNS_SERVER} <= result.infected_hosts
+
+    def test_a_documented_host_the_labels_never_confirm_is_not_counted(self) -> None:
+        """A wrong file or a broken parse must read as "not detected", never as
+        a pass on the strength of the documentation alone."""
+        from voidai.eval.ctu13 import _infected
+
+        assert _infected(SCENARIOS["scenario06"], {"10.9.9.9"}) == set()
+        assert _infected(SCENARIOS["scenario06"], {INFECTED, _DNS_SERVER}) == {INFECTED}
+
+    def test_the_report_names_only_the_bot_and_says_how_it_counted(
+        self, capture_with_reply: Path
+    ) -> None:
+        """Through the command an operator runs. Before, the "infected host"
+        row listed the DNS server beside the bot."""
+        from typer.testing import CliRunner
+
+        from voidai.cli import app
+
+        result = CliRunner().invoke(app, ["bench", "--real", str(capture_with_reply)])
+        assert result.exit_code == 0, result.output
+        detected = next(ln for ln in result.output.splitlines() if "infected host" in ln)
+        assert INFECTED in detected
+        assert _DNS_SERVER not in detected
+        # The table wraps at the runner's 80 columns; read it as prose.
+        prose = " ".join(result.output.replace("│", " ").split())
+        assert "1 documented infected host (2 sources carry the label)" in prose
+
+    def test_both_scenarios_name_their_bot(self) -> None:
+        """The default is empty, so an unrecognised capture is never scored
+        against a host it does not contain; the known ones say so explicitly."""
+        for key in ("scenario03", "scenario06"):
+            assert SCENARIOS[key].documented_infected == (INFECTED,)

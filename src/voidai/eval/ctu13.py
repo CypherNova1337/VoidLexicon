@@ -89,10 +89,12 @@ class Scenario:
     filename: str
     malware: str
     duration_hours: float
-    #: The compromised host documented by the CTU-13 authors. Used only as a
-    #: cross-check against the hosts derived from the label column, never as
-    #: an input to detection.
-    documented_infected: tuple[str, ...] = ("147.32.84.165",)
+    #: The compromised hosts the CTU-13 authors document for this capture.
+    #: Scoring counts a host as infected only when it is documented here *and*
+    #: the labels confirm it — see `_infected`. Never an input to detection.
+    #: Empty for a capture this module does not recognise, which then falls
+    #: back to the labels alone.
+    documented_infected: tuple[str, ...] = ()
 
     @property
     def url(self) -> str:
@@ -105,12 +107,14 @@ SCENARIOS: dict[str, Scenario] = {
         filename="capture20110812.pcap.netflow.labeled",
         malware="Rbot",
         duration_hours=66.85,
+        documented_infected=("147.32.84.165",),
     ),
     "scenario06": Scenario(
         key="CTU-Malware-Capture-Botnet-47",
         filename="capture20110816.pcap.netflow.labeled",
         malware="Menti",
         duration_hours=2.18,
+        documented_infected=("147.32.84.165",),
     ),
 }
 
@@ -126,6 +130,9 @@ class RealCaptureResult:
     flow_count: int = 0
     span_hours: float = 0.0
     infected_hosts: set[str] = field(default_factory=set)
+    #: Every source of a botnet-labelled flow. Reported for context, not
+    #: scored: in this dialect it includes every server that answered the bot.
+    label_sources: set[str] = field(default_factory=set)
     botnet_pairs: set[tuple[str, str]] = field(default_factory=set)
     flagged_pairs: list[tuple[str, str]] = field(default_factory=list)
     queue: IncidentQueue = field(default_factory=IncidentQueue)
@@ -242,6 +249,27 @@ def _ground_truth(path: Path) -> tuple[set[str], set[tuple[str, str]]]:
     return {src for src, _ in pairs}, pairs
 
 
+def _infected(scenario: Scenario, label_sources: set[str]) -> set[str]:
+    """Which hosts to score as compromised.
+
+    This dialect's label says a flow belongs to the botnet's traffic, not which
+    end of it is the bot: a server answering the bot carries `Botnet` as surely
+    as the bot's own request does. Read as "every source of a labelled flow is
+    infected", scenario 3 has 3,347 infected hosts, a DNS server among them,
+    for a capture its authors document as having one bot. The first NetFlow
+    parser hid this by accident — server endpoints are short, short endpoints
+    are padded with an extra tab, and padded rows lost their labels.
+
+    So a host counts as infected when the authors document it *and* the labels
+    confirm it. A documented host the labels never confirm is not counted,
+    which surfaces a wrong file or a broken parse as "not detected" rather than
+    as a pass. A capture with nothing documented falls back to the labels.
+    """
+    if not scenario.documented_infected:
+        return set(label_sources)
+    return set(scenario.documented_infected) & label_sources
+
+
 def evaluate(
     path: str | Path,
     scenario: Scenario,
@@ -249,7 +277,8 @@ def evaluate(
 ) -> RealCaptureResult:
     """Run the beaconing analyzer against a real capture and score it."""
     path = Path(path)
-    infected_hosts, botnet_pairs = _ground_truth(path)
+    label_sources, botnet_pairs = _ground_truth(path)
+    infected_hosts = _infected(scenario, label_sources)
 
     receipt = RunReceipt()
     with EnergyMeter() as meter:
@@ -301,6 +330,7 @@ def evaluate(
         flow_count=records,
         span_hours=float(span_hours),
         infected_hosts=infected_hosts,
+        label_sources=label_sources,
         botnet_pairs=botnet_pairs,
         queue=queue,
         flagged_pairs=[

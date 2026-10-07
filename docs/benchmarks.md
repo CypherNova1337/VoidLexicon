@@ -17,6 +17,25 @@ voidai bench                              # synthetic, seeded: beaconing, then e
 voidai bench --real data/ctu13/<file>     # CTU-13, after fetching a capture
 ```
 
+> **Correction, 7 October 2026 — every CTU-13 figure.** The CTU-13 files pad
+> a short field with an extra tab so their columns line up on screen, and the
+> NetFlow parser read them positionally. 29% of scenario 6's rows and 41% of
+> scenario 3's were misread: the direction arrow taken as the destination, or
+> the flow count as the label, which cost scenario 6 43% of its botnet labels.
+> Polars up to 1.33 accepted the files silently; Polars 2.0 refuses them,
+> which is how it was found. Section 2 is re-measured on the corrected parse,
+> and the two results that matter held — the infected host at rank 2 of 275
+> and rank 1 of 176, against 247 and 160 before, with corroborated incidents
+> still 3 and 1. Correct labels then exposed a second defect: they mark the
+> botnet's traffic, not which end is the bot, so scoring "every source of a
+> labelled flow" as infected counted 3,347 hosts on scenario 3. Infected hosts
+> are now the ones the CTU-13 authors document, confirmed by the labels.
+>
+> CTU-13 figures in sections 3 to 11 are left as they were measured, on the
+> misparsed rows, because they record what each change did at the time and
+> their comparisons are internally consistent. Their absolute values are
+> superseded by section 2.
+
 ---
 
 ## 1. Synthetic corpus — beaconing (seed 1337, 24h)
@@ -60,22 +79,41 @@ of real botnet traffic on a university network, every flow labelled `Botnet`,
 `Normal`, or `Background`. Licence: CC-BY.
 
 Measured with all three network analyzers running — beaconing, fan-out, and
-volume-and-egress.
+volume-and-egress — on the corrected parse, 7 October 2026: `voidai bench
+--real` on a four-core x86-64 VM, Polars 2.0.
 
 | | Scenario 3 | Scenario 6 |
 |---|---|---|
 | Malware | Rbot | Menti |
 | Duration | 66.8h | 2.15h |
-| Flows analysed | 12,689,947 | 1,916,655 |
+| Flows analysed | 10,159,384 | 1,605,474 |
 | **Infected host detected** | **yes** | **yes** |
 | C2 beaconing confidence | **0.958** | 0.749 |
-| C2 rank among beaconing findings | 204 / 1277 | 358 / 395 |
-| **Infected host queue rank** | **2 / 247** | **1 / 160** |
-| Findings → incidents | 1589 → 247 | 512 → 160 |
+| C2 rank among beaconing findings | 216 / 1359 | 376 / 415 |
+| **Infected host queue rank** | **2 / 275** | **1 / 176** |
+| Findings → incidents | 2253 → 275 | 596 → 176 |
 | Corroborated incidents | 3 | 1 |
-| Beaconing pair precision | 0.0008 | 0.0025 |
-| Throughput | 206,657 rec/s | 180,280 rec/s |
-| Peak RSS | 2,662 MB | 632 MB |
+| Beaconing pair precision | 0.0007 | 0.0024 |
+| Throughput | 113,996 rec/s | 104,551 rec/s |
+| Peak RSS | 2,746 MB | 625 MB |
+
+The infected host is `147.32.84.165`, the bot the CTU-13 authors document for
+both captures, and the rank is its own — measured directly, not inferred from
+the labels. On scenario 3 the one host above it is `147.32.84.229`, the
+campus gateway section 12 describes, now tied with it on priority.
+
+**What the correction changed.** Flows analysed fall — 12.7M to 10.2M and 1.92M
+to 1.61M — mostly because a row misread with the arrow as its destination had
+no destination port, so flow orientation could not recognise it as the reply
+half of a conversation; read correctly, those replies are dropped. Findings
+rise, 1589 → 2253 and 512 → 596, as traffic that had collapsed onto a single
+false destination, `->`, spreads back across real ones. Throughput is lower,
+partly for the same reason and partly because the parser now normalises every
+line before splitting it. Peak memory rises 84 MB on scenario 3 and falls
+7 MB on scenario 6. The ranks held, and corroborated incidents are unchanged.
+
+The rest of this section was measured before the correction, on the misparsed
+rows; its comparisons are between figures taken the same way.
 
 **What the third analyzer changed, and what it did not.** Findings rise by
 about 20% on scenario 3 (1328 → 1589) and 29% on scenario 6 (397 → 512), and
@@ -2012,11 +2050,12 @@ constant drag. Length against the *image's own* distribution — through the
 existing `robust_deviation` — is the measurement that would work, and it is
 guessed at nowhere.
 
-**Memory headroom on the largest capture.** 2,662 MB does fit a 4GB board —
-measured against a hard cgroup ceiling, section 3 — but with roughly 1.1 GB
-spare rather than a wide margin. A third analyzer did not change that, and a
-fourth need not either, but nothing enforces it. Windowing pass 1 would lower
-it further.
+**Memory headroom on the largest capture.** Re-measured on the corrected
+parse, scenario 3 peaks at 2,746 MB unconstrained and completes inside a
+2,200 MB hard cgroup ceiling, so a 4GB board clears it with roughly 1.5 GB
+spare. That is a wider margin than the 1.1 GB measured on the misparsed rows,
+but nothing enforces it as analyzers are added. Windowing pass 1 would lower it
+further.
 
 ---
 
