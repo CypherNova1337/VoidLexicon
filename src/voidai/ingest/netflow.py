@@ -7,12 +7,22 @@ command-and-control traffic carrying per-flow labels, and this parser is what
 lets VoidLexicon's benchmark run against them rather than only against its own
 synthetic corpus.
 
-The format is tab-separated, and has one quirk worth knowing: the flow
-direction arrow occupies its own column, so the destination endpoint sits at
-index 5 rather than 4.
+The format is tab-separated, with two quirks worth knowing. The flow direction
+arrow occupies its own column, so the destination endpoint sits at index 5
+rather than 4:
 
     Date flow start   Durat  Prot  Src IP Addr:Port  ->  Dst IP Addr:Port  ...
     2011-08-16 10:01:46.972  4.933  TCP  88.176.79.163:49213  ->  147.32.84.172:18250 ...
+
+And the files were written to line up in a terminal, so a *short* field is
+followed by an extra tab: `147.32.80.13:80\t\t->` where a long endpoint gets
+one. A run of tabs is therefore one separator. Read positionally, the padded
+rows shift every column after the pad — the arrow lands in the destination
+column, or the flow count lands in the label column — and the first version of
+this parser did exactly that: 29% of scenario 6's rows and 41% of scenario 3's
+were misread, including 43% of scenario 6's botnet rows, which lost their
+label. Collapsing the runs gives every one of the 17.8 million rows in both
+captures exactly twelve fields with the arrow in its column.
 
 Parsing is fully vectorised through Polars — no per-row Python. A row loop
 costs about 37k flows/second, which turns the 66-hour CTU-13 scenario into a
@@ -154,17 +164,31 @@ def scan_labelled_netflow(path: str | Path, orient: bool = True) -> pl.LazyFrame
     """
     path = Path(path)
 
-    scan = pl.scan_csv(
-        path,
-        separator="\t",
-        has_header=False,
-        skip_rows=1,  # the header line does not use tab separators throughout
-        new_columns=_RAW_COLUMNS,
-        schema_overrides=dict.fromkeys(_RAW_COLUMNS, pl.Utf8),
-        truncate_ragged_lines=True,
-        quote_char=None,  # log text is not quoted; treating " as a quote breaks rows
-        low_memory=True,
-    ).with_row_index("source_line", offset=2)  # offset past the skipped header
+    # Each line is read whole and split here rather than by the CSV reader,
+    # because a run of tabs is one separator in this format — see the module
+    # docstring. `\x1f` never occurs in the files, so it keeps the reader from
+    # splitting at all.
+    scan = (
+        pl.scan_csv(
+            path,
+            separator="\x1f",
+            has_header=False,
+            skip_rows=1,  # the header line does not use tab separators throughout
+            new_columns=["line"],
+            schema_overrides={"line": pl.Utf8},
+            quote_char=None,  # log text is not quoted; treating " as a quote breaks rows
+            low_memory=True,
+        )
+        .with_row_index("source_line", offset=2)  # offset past the skipped header
+        .with_columns(
+            pl.col("line")
+            .str.replace_all(r"\t+", "\t")
+            .str.splitn("\t", len(_RAW_COLUMNS))
+            .struct.rename_fields(_RAW_COLUMNS)
+            .alias("fields")
+        )
+        .unnest("fields")
+    )
 
     parsed = scan.select(
         pl.col("ts_raw")

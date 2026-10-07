@@ -91,6 +91,82 @@ class TestParsing:
         assert read_labelled_netflow(path).height == 0
 
 
+#: Verbatim from CTU-13 scenario 6. The files pad a short field with an extra
+#: tab so the columns line up in a terminal; these are the infected host's own
+#: DNS lookup and its reply, one padded after the destination and one after
+#: the source.
+PADDED_AFTER_DESTINATION = (
+    "2011-08-16 10:02:08.703\t0.000\tUDP\t147.32.84.165:1025\t->\t147.32.80.9:53\t\tINT"
+    "\t0\t1\t78\t1\tBotnet\n"
+)
+PADDED_AFTER_SOURCE = (
+    "2011-08-16 10:02:08.871\t0.000\tUDP\t147.32.80.9:53\t\t->\t147.32.84.165:1025\tINT"
+    "\t0\t1\t427\t1\tBotnet\n"
+)
+PADDED_TWICE = (
+    "2011-08-16 10:01:47.788\t0.000\tARP\t147.32.87.78\t\t->\t147.32.87.78\t\tINT"
+    "\t0\t1\t60\t1\tBackground\n"
+)
+
+
+class TestPaddedColumns:
+    """A run of tabs is one separator.
+
+    Read positionally, a padded row shifts every column after the pad. The
+    first parser did that to 29% of scenario 6 and 41% of scenario 3 — the
+    arrow landed in the destination column, or the flow count in the label
+    column — and reported success. Newer Polars refuses the file instead.
+    """
+
+    @pytest.fixture
+    def padded(self, tmp_path: Path) -> Path:
+        path = tmp_path / "padded.netflow.labeled"
+        path.write_text(HEADER + PADDED_AFTER_DESTINATION + PADDED_AFTER_SOURCE + PADDED_TWICE)
+        return path
+
+    def test_every_padded_row_parses(self, padded: Path) -> None:
+        assert read_labelled_netflow(padded, orient=False).height == 3
+
+    def test_a_pad_after_the_source_does_not_move_the_arrow_into_the_destination(
+        self, padded: Path
+    ) -> None:
+        frame = read_labelled_netflow(padded, orient=False).sort("source_line")
+        assert "->" not in frame["dst_ip"].to_list()
+        assert frame["dst_ip"].to_list() == ["147.32.80.9", "147.32.84.165", "147.32.87.78"]
+        assert frame["dst_port"].to_list() == [53, 1025, None]
+
+    def test_a_pad_after_the_destination_keeps_the_label_and_the_volume(
+        self, padded: Path
+    ) -> None:
+        """The case that cost ground truth: shifted, the flow count `1` is
+        read as the label, and a botnet row is scored as background."""
+        frame = read_labelled_netflow(padded, orient=False).sort("source_line")
+        assert frame["label"].to_list() == [LABEL_BOTNET, LABEL_BOTNET, LABEL_BACKGROUND]
+        assert frame["orig_bytes"].to_list() == [78, 427, 60]
+        assert frame["orig_pkts"].to_list() == [1, 1, 1]
+        assert frame["conn_state"].to_list() == ["INT", "INT", "INT"]
+
+    def test_padded_and_unpadded_rows_mix_in_one_file(self, tmp_path: Path) -> None:
+        """Real captures interleave both shapes line by line."""
+        path = tmp_path / "mixed.netflow.labeled"
+        path.write_text(
+            HEADER
+            + row("2011-08-16 10:00:00.100", "147.32.84.165:1027", "91.212.135.158:5678", label="Botnet")
+            + PADDED_AFTER_DESTINATION
+            + row("2011-08-16 10:00:01.000", "147.32.84.59:52431", "93.184.216.34:443", label="Normal")
+            + PADDED_AFTER_SOURCE
+        )
+        frame = read_labelled_netflow(path, orient=False).sort("source_line")
+        assert frame.height == 4
+        assert frame["source_line"].to_list() == [2, 3, 4, 5]
+        assert frame["dst_ip"].to_list() == [
+            "91.212.135.158",
+            "147.32.80.9",
+            "93.184.216.34",
+            "147.32.84.165",
+        ]
+
+
 class TestLabels:
     def test_normalises_the_three_classes(self, capture: Path) -> None:
         labels = set(read_labelled_netflow(capture, orient=False)["label"].to_list())

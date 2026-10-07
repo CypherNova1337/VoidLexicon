@@ -807,10 +807,13 @@ def demo(
 ) -> None:
     """Generate a complete capture and run the full pipeline over it.
 
-    Three real files in three real formats — Zeek conn.log, passivedns, and
-    Suricata EVE — so the production parsers are exercised rather than
-    bypassed. One host exhibits all four detectable behaviours, hidden in
-    benign traffic of each kind, and nothing in the data marks it out.
+    Real files in real sensor formats — Zeek conn, dns and ssl logs,
+    passivedns, Suricata EVE, Sysmon process events and an asset inventory —
+    so the production parsers are exercised rather than bypassed. One machine
+    beacons, sweeps a port, tunnels over DNS, resolves generated domains, runs
+    a TLS client and a binary nothing else runs, and launches shells from an
+    unusual parent, each hidden in benign traffic of its kind. Nothing in the
+    data marks it out.
     """
     import tempfile
 

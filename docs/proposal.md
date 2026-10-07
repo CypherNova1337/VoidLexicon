@@ -12,9 +12,9 @@ python3 -m venv .venv && source .venv/bin/activate && pip install -e .
 voidai demo        # the command-line tool is `voidai`
 ```
 
-That generates a capture in real sensor formats, runs the whole pipeline and
-puts the compromised host at the top of the queue — in about half a second,
-with no model, no GPU and no network.
+That writes a capture in real sensor formats, runs the whole pipeline and puts
+the compromised host at the top of the queue, with no model, no GPU and no
+network. Detection itself takes about half a second.
 
 ## 1. The problem
 

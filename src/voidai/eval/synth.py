@@ -1613,14 +1613,17 @@ def write_passivedns(path: str | Path, queries: pl.DataFrame) -> Path:
 
 
 def build_demo_capture(directory: str | Path, seed: int = 1337) -> Path:
-    """Write a complete multi-source capture: connections, DNS, TLS and alerts.
+    """Write a complete multi-source capture: connections, DNS, TLS, alerts,
+    process events and an asset inventory.
 
     One host — `10.0.1.14` — beacons, sweeps a port, tunnels over DNS, runs a
     domain generation algorithm, presents a TLS client fingerprint nothing
-    else in the estate runs, and trips two severe signatures. Every one of
-    those is hidden in benign traffic of the same kind. Nothing about the host
-    is flagged in the data; it is distinguishable only by measuring it, which
-    is the point of the demonstration.
+    else in the estate runs, and trips two severe signatures. On the endpoint
+    side the same machine — `FINANCE-WS04`, per the inventory — runs a binary
+    no other host runs and launches shells from an unusual parent. Every one
+    of those is hidden in benign activity of the same kind. Nothing about the
+    host is flagged in the data; it is distinguishable only by measuring it,
+    which is the point of the demonstration.
 
     Written as real files in real sensor formats, so `voidai run` exercises
     the production parsers rather than a shortcut.
