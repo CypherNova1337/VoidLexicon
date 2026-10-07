@@ -118,19 +118,24 @@ for log in /var/log/zeek/*/conn.*.log.gz; do voidai run "$(dirname "$log")"; don
 The same harness caps CPU with a CFS quota. A quota can make a core slower but
 cannot give it a different microarchitecture, so no single setting *is* a Pi.
 What it produces instead is a scaling curve that real hardware can be located
-on with one run. Measured on CTU-13 scenario 6, 1.9M flows, memory
-unconstrained:
+on with one run. Measured on CTU-13 scenario 6, 1.6M flows on the corrected
+parse, memory unconstrained; detection time is the receipt's, excluding start-up
+and the ground-truth pass:
 
-| CPU quota | Wall | Throughput |
+| CPU quota | Detection | Throughput |
 |---|---|---|
-| 400% (4 cores) | 8.5 s | 284k rec/s |
-| 300% | 10.2 s | 235k rec/s |
-| 200% | 14.2 s | 169k rec/s |
-| 100% (1 core) | 25.3 s | 95k rec/s |
-| 50% | 52.5 s | 45k rec/s |
+| 400% (4 cores) | 15.3 s | 105k rec/s |
+| 300% | 19.1 s | 84k rec/s |
+| 200% | 27.3 s | 59k rec/s |
+| 100% (1 core) | 50.3 s | 32k rec/s |
+| 50% | 109.1 s | 15k rec/s |
 
-Four cores return 3.0× the throughput of one, so the pipeline parallelises at
-about 75% efficiency.
+Four cores return 3.3× the throughput of one, so the pipeline parallelises at
+about 82% efficiency. Every row ranks the infected host first of 176. The
+curve measured on the misparsed rows showed two to three times this
+throughput, partly because the parser now normalises every line before
+splitting it, and partly because 14% of the rows had collapsed onto one false
+destination and cost almost nothing to analyse.
 
 The load-bearing result is the combined envelope. The 12.7M-flow capture, held
 to 3 GB and a *single* 2.1GHz core, completes in **166 seconds** — and returns
