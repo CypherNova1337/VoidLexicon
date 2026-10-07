@@ -102,6 +102,16 @@ still wrong. "Likely legitimate" about a real beacon cites correctly and
 fabricates nothing. Only better grounding fixes that class, which is why the
 three fixes above are about the prompt rather than the filter.
 
+A measured instance that is not yet fixed. On `voidai demo`'s
+false-positive incident — a single `executes_rare_process` finding at 0.98 —
+Qwen2.5-1.5B calls that confidence "low" on **3 of 8 seeds**, once as a
+verified claim, because its citation is real. The obvious suspect was the
+brief printing `confidence 0.98 (medium)`, with the predicate's severity where
+an adjective for the number would sit. Relabelled as `severity medium`, the
+same eight seeds gave **2 of 8**, and different seeds misread — noise, not a
+fix — so the change was not kept. In the two full demo runs made, the
+top-ranked incident did not show it; two runs is not a measurement of that.
+
 Struck claims are shown to the analyst, not silently dropped. Someone deciding
 whether to trust this tool needs to see what it refused to say, and the strike
 count appears on every receipt as a standing measure of confabulation.
