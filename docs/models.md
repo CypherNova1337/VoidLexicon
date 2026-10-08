@@ -48,16 +48,18 @@ Qwen2.5-1.5B-Instruct Q4_K_M, 4 CPU threads, x86_64, on the CTU-13 scenario 6
 top-ranked incident:
 
 ```
-brief            256 tokens        (2 findings, 3 measurements)
-prompt           605 tokens
-completion       188 tokens
-wall            28.9 s             (~7-11 tok/s)
+brief            489 tokens        (4 findings, 7 measurements)
+prompt           887 tokens
+completion       286 tokens
+wall            25.2 s             (~11 tok/s, model already loaded)
 claims struck      0
 ```
 
-Detection throughput is unaffected — 332,759 records/second — because the two
-stages are metered separately. The receipt reports them on separate lines for
-exactly that reason.
+Re-measured on 8 October 2026, after the CTU-13 parser correction described at
+the top of [`benchmarks.md`](benchmarks.md); the incident now carries four
+findings where it carried two. Detection throughput is unaffected — 103,166
+records/second — because the two stages are metered separately. The receipt
+reports them on separate lines for exactly that reason.
 
 ## What a 1.5B model gets wrong, and what was done about it
 

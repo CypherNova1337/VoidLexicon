@@ -59,10 +59,11 @@ schema and then passed through a **claim verifier** that strikes any sentence
 whose cited evidence IDs do not resolve.
 
 Measured, on the top-ranked CTU-13 incident with Qwen2.5-1.5B at 4-bit on four
-CPU threads: a **256-token brief**, 188 tokens of response, 28.9 seconds, and
-**zero struck claims**. Detection ran at 332,759 records/second in the same
-run — the two stages are metered separately, because folding a model's writing
-time into detection throughput would understate it by two orders of magnitude.
+CPU threads: a **489-token brief** of four findings, 286 tokens of response,
+25 seconds, and **zero struck claims**. Detection ran at 103,166
+records/second in the same run — the two stages are metered separately,
+because folding a model's writing time into detection throughput would
+understate the detector.
 
 It is also why detection quality is identical with the model switched off:
 
@@ -264,7 +265,8 @@ Reproduce with `voidai bench` and `voidai bench --real <capture>`.
 **Ranking is the whole game.** Beaconing alone puts the scenario 6 C2 at rank
 376 of 415 — detected and invisible are the same thing to an analyst working a
 queue. The fix was not a better periodicity measure: the findings outranking
-it were *genuinely* beacon-like monitoring agents and backup jobs. What
+it are *genuinely* beacon-like — machine-timed traffic at exact intervals, none
+of it labelled botnet. What
 separates a compromised host is that it does several suspicious things at
 once. A second analyzer plus correlation by corroboration moved it to rank 1.
 

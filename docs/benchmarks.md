@@ -20,21 +20,23 @@ voidai bench --real data/ctu13/<file>     # CTU-13, after fetching a capture
 > **Correction, 7 October 2026 — every CTU-13 figure.** The CTU-13 files pad
 > a short field with an extra tab so their columns line up on screen, and the
 > NetFlow parser read them positionally. 29% of scenario 6's rows and 41% of
-> scenario 3's were misread: the direction arrow taken as the destination, or
-> the flow count as the label, which cost scenario 6 43% of its botnet labels.
-> Polars up to 1.33 accepted the files silently; Polars 2.0 refuses them,
-> which is how it was found. Section 2 is re-measured on the corrected parse,
-> and the two results that matter held — the infected host at rank 2 of 275
+> scenario 3's were misread. Every misread row had a number read as its label,
+> which cost scenario 6 43% of its botnet labels, and about half had the
+> direction arrow read as their destination as well. Polars up to 1.33
+> accepted the files silently; Polars 2.0 refuses them, which is how it was
+> found. Sections 2 and 4 are re-measured on the corrected parse, as are the
+> memory and CPU figures in `deployment.md`, and the two results that matter
+> held — the infected host at rank 2 of 275
 > and rank 1 of 176, against 247 and 160 before, with corroborated incidents
 > still 3 and 1. Correct labels then exposed a second defect: they mark the
 > botnet's traffic, not which end is the bot, so scoring "every source of a
 > labelled flow" as infected counted 3,347 hosts on scenario 3. Infected hosts
 > are now the ones the CTU-13 authors document, confirmed by the labels.
 >
-> CTU-13 figures in sections 3 to 11 are left as they were measured, on the
-> misparsed rows, because they record what each change did at the time and
-> their comparisons are internally consistent. Their absolute values are
-> superseded by section 2.
+> CTU-13 figures in section 3 and sections 5 to 11 are left as they were
+> measured, on the misparsed rows, because they record what each change did at
+> the time and their comparisons are internally consistent. Their absolute
+> values are superseded by section 2.
 
 ---
 
@@ -351,20 +353,22 @@ output.
 ## 4. The language layer
 
 Qwen2.5-1.5B-Instruct Q4_K_M, 4 CPU threads, x86_64, on the CTU-13 scenario 6
-top-ranked incident:
+top-ranked incident — the documented bot, rank 1 of 176 — re-measured on the
+corrected parse, 8 October 2026, with the model already loaded:
 
 | | |
 |---|---|
-| Evidence brief | 256 tokens (2 findings, 3 measurements) |
-| Prompt / completion | 605 / 188 tokens |
-| Wall time | 28.9 s (~7-11 tok/s) |
+| Evidence brief | 489 tokens (4 findings, 7 measurements) |
+| Prompt / completion | 887 / 286 tokens |
+| Wall time | 25.2 s (~11 tok/s) |
 | Claims struck | 0 |
-| Detection throughput, same run | 332,759 rec/s |
+| Detection throughput, same run | 103,166 rec/s |
 
-Detection and reasoning are metered separately. Folding them together
-divides detection throughput by the time a model spent writing prose — the
-first version of the receipt reported 781 rec/s for a stage that actually runs
-at over 300,000.
+The brief is larger than the 256 tokens first recorded because the incident
+now carries four findings rather than two. Detection and reasoning are metered
+separately. Folding them together divides detection throughput by the time a
+model spent writing prose — the first version of the receipt reported 781
+rec/s for a stage that runs at over 100,000.
 
 Four things the model got wrong, all fixed by changing what it is *shown*
 rather than by prompting harder — full detail in

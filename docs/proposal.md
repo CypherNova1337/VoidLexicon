@@ -115,8 +115,9 @@ shell is executed in the test suite against hostile input.
 | Throughput · peak memory | 114k rec/s · 2.7 GB | 105k rec/s · 0.6 GB |
 
 Ranking is the whole story. Beaconing alone puts scenario 6's C2 at 376 of 415;
-the findings above it are *genuinely* beacon-like monitoring agents. What
-separates a compromised host is that it does several suspicious things at once.
+the findings above it are *genuinely* beacon-like — machine-timed traffic at
+exact intervals, none of it labelled botnet. What separates a compromised host
+is that it does several suspicious things at once.
 The rank is the bot the CTU-13 authors document, confirmed by the labels.
 
 **Real specificity.** Across 3,655 real DNS records from 18 hosts, the
@@ -131,10 +132,11 @@ it takes six minutes and still ranks the host second. `voidai demo` completes
 inside 192 MB. This is not an ARM test — the kernel reproduces memory and cores
 exactly; the instruction set cannot be.
 
-**The language layer.** Qwen2.5-1.5B at 4-bit on four CPU threads: 256-token
-brief, 188-token response, 28.9 s, **zero struck claims**.
+**The language layer.** Qwen2.5-1.5B at 4-bit on four CPU threads, on the
+scenario 6 incident: 489-token brief, 286-token response, 25 s, **zero struck
+claims**.
 
-**739 tests**, including one that severs sockets and asserts the pipeline still
+**758 tests**, including one that severs sockets and asserts the pipeline still
 completes.
 
 ## 5. Against the eleven principles

@@ -54,7 +54,7 @@ it survives):
 | `pytest` (738 tests) | — | 324–332 MB | **384 MB** |
 | CTU-13 scenario 6 | 1.6M | 525–542 MB | **512 MB** |
 | CTU-13 scenario 3 | 10.2M | 2,077–2,133 MB | **2.0 GB** |
-| Detection + Qwen2.5-1.5B q4\_k\_m | 74,157 | 2,072 MB | ~2.5 GB |
+| Detection + Qwen2.5-1.5B q4\_k\_m | 79,300 | 1,425 MB | **1.5 GB** |
 
 The first two rows were re-measured after the analyzer count doubled; the
 demo capture itself grew from 74,157 records to 79,300 when `ssl.log` and
@@ -62,8 +62,15 @@ demo capture itself grew from 74,157 records to 79,300 when `ssl.log` and
 records and high on ceiling. The two CTU-13 rows were re-measured on 7–8
 October 2026, after the NetFlow parser was corrected — the correction at the
 top of [`benchmarks.md`](benchmarks.md) says what was wrong — and the earlier
-figures, 768 MB and 2.6 GB, were measured on misparsed rows. The model row is
-carried forward from the smaller demo capture it was measured on.
+figures, 768 MB and 2.6 GB, were measured on misparsed rows.
+
+The model row was re-measured on the same dates, narrating two incidents of
+the current demo capture: it completes from 1,536 MB and is killed at
+1,280 MB, while loading the model. Its peak is the figure under a ceiling. With
+no ceiling at all the charge reaches 2,504 MB — higher by about the size of
+the model file — yet constraining it to 1,536 MB costs no time, which is what
+reclaimable page cache looks like. The earlier row, 2,072 MB needing ~2.5 GB,
+was taken on the smaller 74,157-record capture and is superseded.
 
 A ceiling below the peak is not a contradiction. `voidai demo` completes at
 192 MB and at 224 MB, but at both the reported peak *equals the ceiling
@@ -91,7 +98,9 @@ unconstrained result. The run at 2,000 MB is the useful one: it is what
 "running at the wall" looks like, and it is why the recommendation is not the
 bare floor. **2.4 GB of free memory is the recommendation** — the capture
 completes with room from 2.2 GB and is killed by 1.8 GB — and a 4GB Pi 5
-clears it, peaking at 2.1 GB with about 1.5 GB to spare.
+clears it, peaking at 2.1 GB with about 1.5 GB to spare. Detection plus the
+language model, on the demo capture, needs about 1.4 GB, leaving more than 2 GB
+on the same board.
 
 Two earlier bisections put the boundary in a 2.4–2.6 GB band, a ceiling the
 capture now clears with room. Both were measured on the misparsed rows, which
@@ -270,6 +279,6 @@ core; the shape holds.
 
 Detection runs at roughly 105,000–115,000 records/second on labelled NetFlow,
 and about 160,000 on the demo's Zeek logs. The narrative layer adds
-about 30 seconds per incident narrated on a 1.5B model at 4-bit — it is
+25–40 seconds per incident narrated on a 1.5B model at 4-bit — it is
 metered separately on the receipt for that reason, and `--explain N` bounds
 how many incidents are narrated.

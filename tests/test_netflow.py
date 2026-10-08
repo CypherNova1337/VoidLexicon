@@ -113,9 +113,10 @@ class TestPaddedColumns:
     """A run of tabs is one separator.
 
     Read positionally, a padded row shifts every column after the pad. The
-    first parser did that to 29% of scenario 6 and 41% of scenario 3 — the
-    arrow landed in the destination column, or the flow count in the label
-    column — and reported success. Newer Polars refuses the file instead.
+    first parser did that to 29% of scenario 6 and 41% of scenario 3 — a
+    number landed in every one's label column, and in about half the arrow
+    landed in the destination column too — and reported success. Newer
+    Polars refuses the file instead.
     """
 
     @pytest.fixture

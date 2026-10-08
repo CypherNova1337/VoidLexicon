@@ -16,12 +16,12 @@ rather than 4:
 
 And the files were written to line up in a terminal, so a *short* field is
 followed by an extra tab: `147.32.80.13:80\t\t->` where a long endpoint gets
-one. A run of tabs is therefore one separator. Read positionally, the padded
-rows shift every column after the pad — the arrow lands in the destination
-column, or the flow count lands in the label column — and the first version of
-this parser did exactly that: 29% of scenario 6's rows and 41% of scenario 3's
-were misread, including 43% of scenario 6's botnet rows, which lost their
-label. Collapsing the runs gives every one of the 17.8 million rows in both
+one. A run of tabs is therefore one separator. Read positionally, a padded row
+shifts every column after the pad: a number lands in the label column, and
+when the pad follows the source, the arrow lands in the destination column as
+well. The first version of this parser did exactly that — 29% of scenario 6's
+rows and 41% of scenario 3's were misread, and every one lost its label,
+including 43% of scenario 6's botnet rows. Collapsing the runs gives every one of the 17.8 million rows in both
 captures exactly twelve fields with the arrow in its column.
 
 Parsing is fully vectorised through Polars — no per-row Python. A row loop
