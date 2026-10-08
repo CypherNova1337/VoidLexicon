@@ -52,58 +52,54 @@ it survives):
 |---|---|---|---|
 | `voidai demo` | 79,300 | 221–246 MB | **192 MB** |
 | `pytest` (738 tests) | — | 324–332 MB | **384 MB** |
-| CTU-13 scenario 6 | 1.9M | 550 MB | **768 MB** |
-| CTU-13 scenario 3 | 12.7M | 2,545 MB | **2.6 GB** |
-| Detection + Qwen2.5-1.5B q4\_k\_m | 79,300 | 2,072 MB | ~2.5 GB |
+| CTU-13 scenario 6 | 1.6M | 525–542 MB | **512 MB** |
+| CTU-13 scenario 3 | 10.2M | 2,077–2,133 MB | **2.0 GB** |
+| Detection + Qwen2.5-1.5B q4\_k\_m | 74,157 | 2,072 MB | ~2.5 GB |
 
 The first two rows were re-measured after the analyzer count doubled; the
 demo capture itself grew from 74,157 records to 79,300 when `ssl.log` and
 `sysmon.jsonl` were added to it, which is why the earlier figures read low on
-records and high on ceiling. The two CTU-13 rows and the model row are carried
-forward from when they were taken and have not been repeated since.
+records and high on ceiling. The two CTU-13 rows were re-measured on 7–8
+October 2026, after the NetFlow parser was corrected — the correction at the
+top of [`benchmarks.md`](benchmarks.md) says what was wrong — and the earlier
+figures, 768 MB and 2.6 GB, were measured on misparsed rows. The model row is
+carried forward from the smaller demo capture it was measured on.
 
 A ceiling below the peak is not a contradiction. `voidai demo` completes at
 192 MB and at 224 MB, but at both the reported peak *equals the ceiling
 exactly*: the kernel is reclaiming page cache to keep the process under the
 limit, and the number stops describing the working set. Only from 256 MB does
 the peak float free at ~240 MB, which is the real figure. Below 192 MB it is
-OOM-killed on every run. Take the floor as the point of failure and the peak
-as the requirement — they answer different questions.
+OOM-killed on every run. Scenario 6 at 512 MB and scenario 3 at 2,000 MB
+behave the same way. Take the floor as the point of failure and the peak as
+the requirement — they answer different questions.
 
-**Where the 66-hour capture actually breaks**, bisected against a hard ceiling:
-
-| Ceiling | Outcome |
-|---|---|
-| 2,000–2,400 MB | OOM-killed, every run |
-| 2,500 MB | **flaky** — killed on one run, completed on the next |
-| 2,600 MB | completes |
-| 3,000 MB | completes, peak settles at 2,545 MB |
-| 3,696 MB (4GB board less 400 MB for the OS) | completes |
-
-The flakiness at exactly 2,500 MB is the useful part: it is what "running at
-the wall" looks like, and it is why the recommendation is 2.6 GB of *free*
-memory rather than the bare peak. A 4GB Pi 5 clears that with about 1.1 GB to
-spare, and the full pipeline including the language model peaks at 2,072 MB —
-1.6 GB of headroom on the same board.
-
-**Re-bisected with eight analyzers**, against the four the table above was
-measured with:
+**Where the 66-hour capture actually breaks**, bisected against a hard ceiling
+on the corrected parse, all eight analyzers:
 
 | Ceiling | Outcome |
 |---|---|
-| 1,600 – 2,200 MB | OOM-killed, every run |
-| 2,400 MB | completes — the row that was killed at four analyzers |
-| 2,600 MB | completes, peak 2,331 MB |
-| 3,000 MB | completes, peak 2,501 MB |
-| 3,696 MB | completes, peak 2,558 MB |
+| 1,600–1,800 MB | OOM-killed |
+| 2,000 MB | completes, pinned at the ceiling — running at the wall |
+| 2,200 MB | completes, peak 2,097 MB |
+| 2,400 MB | completes, peak 2,103 MB |
+| 2,600 MB | completes, peak 2,077 MB |
+| 3,696 MB (4GB board less 400 MB for the OS) | completes, peak 2,133 MB |
 
-The floor did not move, and if anything relaxed: doubling the analyzer count
-left the boundary in the same 2.4 – 2.6 GB band, and one ceiling that was
-killed before now completes. That is rule 2 confirmed a third time — peak
-memory is set by the hungriest analyzer, not by how many there are — and it is
-why the boundary is described as a band rather than a number. Single runs at
-the wall are not reproducible by nature, which is the whole point of the flaky
-row. **2.6 GB of free memory remains the recommendation**, unchanged.
+Every run that completes ranks the infected host second of 275, the
+unconstrained result. The run at 2,000 MB is the useful one: it is what
+"running at the wall" looks like, and it is why the recommendation is not the
+bare floor. **2.4 GB of free memory is the recommendation** — the capture
+completes with room from 2.2 GB and is killed by 1.8 GB — and a 4GB Pi 5
+clears it, peaking at 2.1 GB with about 1.5 GB to spare.
+
+Two earlier bisections put the boundary in a 2.4–2.6 GB band, a ceiling the
+capture now clears with room. Both were measured on the misparsed rows, which
+analysed 12.7M flows rather than 10.2M with 41% of the capture misread, so
+their absolute numbers are superseded. The comparison between them still
+stands, because both sides were measured the same way: doubling the analyzer
+count from four to eight did not raise the floor. That is rule 2 — peak memory
+is set by the hungriest analyzer, not by how many there are.
 
 Windowing is still what a real deployment does — hourly or daily batches, not
 three days of telemetry at once — but it is now a convenience, not a
@@ -137,22 +133,22 @@ throughput, partly because the parser now normalises every line before
 splitting it, and partly because 14% of the rows had collapsed onto one false
 destination and cost almost nothing to analyse.
 
-The load-bearing result is the combined envelope. The 12.7M-flow capture, held
-to 3 GB and a *single* 2.1GHz core, completes in **166 seconds** — and returns
-the infected host at **queue rank 2 of 214, identical to the unconstrained
-run**. Constraining the board changes how long the answer takes, not what the
-answer is:
+The load-bearing result is the combined envelope. The 10.2M-flow capture, held
+to 3 GB and a *single* core, completes in about **six minutes** — 330 s of
+detection at 31k records per second — and returns the infected host at
+**queue rank 2 of 275, identical to the unconstrained run**. Constraining the
+board changes how long the answer takes, not what the answer is:
 
-| Envelope | Wall | Throughput | Infected host |
-|---|---|---|---|
-| 3,000 MB @ 200% | 84.8 s | 179k rec/s | rank 2 of 214 |
-| 3,000 MB @ 100% | 165.8 s | 91k rec/s | rank 2 of 214 |
-| 3,696 MB @ 200% | 87.2 s | 173k rec/s | rank 2 of 214 |
+| Envelope | Wall | Infected host |
+|---|---|---|
+| Unconstrained — four cores, no ceiling | 102 s | rank 2 of 275 |
+| 3,696 MB (4GB board), four cores | 99 s | rank 2 of 275 |
+| 2,000 MB, at the wall | 101 s | rank 2 of 275 |
+| 3,000 MB, one core (two runs) | 368–379 s | rank 2 of 275 |
 
-These envelope runs were measured with two analyzers, and the denominator has
-since grown to 247 with a third — the unconstrained rank is 2 either way, and
-peak memory moved by under 10 MB, but the runs above have not been repeated
-and are reported as what they are.
+Wall is the whole command, including the separate pass that reads ground
+truth. The runs this table replaces were measured on the misparsed rows, with
+two analyzers, at 166 s on one core.
 
 ### What this harness does not prove
 
@@ -264,14 +260,16 @@ unprivileged.
 
 ## Sizing
 
-Measured on x86_64, 4 cores. ARM will be slower per core; the shape holds.
+Measured on x86_64, 4 cores, on the corrected parse. ARM will be slower per
+core; the shape holds.
 
-| Capture | Flows | Wall | Peak RSS |
+| Capture | Flows | Detection | Peak RSS |
 |---|---|---|---|
-| 2 hours | 1.9M | 8.7 s | 0.6 GB |
-| 66 hours | 12.7M | 57 s | 2.7 GB |
+| 2 hours | 1.6M | 15 s | 0.6 GB |
+| 66 hours | 10.2M | 89 s | 2.7 GB |
 
-Detection runs at roughly 220,000 records/second. The narrative layer adds
+Detection runs at roughly 105,000–115,000 records/second on labelled NetFlow,
+and about 160,000 on the demo's Zeek logs. The narrative layer adds
 about 30 seconds per incident narrated on a 1.5B model at 4-bit — it is
 metered separately on the receipt for that reason, and `--explain N` bounds
 how many incidents are narrated.
