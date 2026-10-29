@@ -178,7 +178,26 @@ TLS, so only three analyzers can fire on it.
 `establishes_persistence`, `authentication_anomaly`, `attacks_web_endpoint`,
 `enumerates_web_paths`.
 
-## 7. What real data changed
+## 7. If selected: a real Raspberry Pi 5
+
+Every Pi figure in this summary comes from an ordinary x86 Linux machine on
+which the kernel enforced a 4 GB Pi 5's memory limit and capped its cores. That
+shows whether VoidLexicon fits. It cannot show how it behaves on the Pi's ARM
+processor, how fast it runs there, or what it draws from the wall — and no Pi
+was available before this deadline.
+
+As a semi-finalist, VoidLexicon would run on a Raspberry Pi 5 with 4 GB of RAM
+and an INA219 current sensor on its power rail: one purchase that closes both
+hardware items above. On the board itself —
+
+- **Re-measured:** memory, detection time, the CTU-13 ranks, the language
+  layer, and the envelope figures in section 4.
+- **Measured for the first time:** energy, in joules from the sensor rather
+  than estimated.
+- **Tuned and reported:** anything slower, heavier or different on ARM than the
+  envelope predicted is fixed, and the final submission states what changed.
+
+## 8. What real data changed
 
 The most useful thing in this project is the list of assumptions that were
 wrong until real traffic proved them wrong — each invisible on synthetic data,
@@ -188,11 +207,11 @@ NetFlow records with a 0.15-second median interval; the textbook "server has
 the lower port" rule, which deletes scenario 6's only true positive; and
 `"Not Suspicious Traffic"` matching the word it negates. Found last: the files
 pad a short field with an extra tab, and the parser misread up to 41% of rows
-until that was corrected. The CTU-13 results above are re-measured on the
-corrected parse, and the ranks held. Each is written up in
+until that was corrected. The CTU-13 results in section 4 are re-measured on
+the corrected parse, and the ranks held. Each is written up in
 [`benchmarks.md`](benchmarks.md) with the measurement that exposed it.
 
-## 8. Reproducing everything
+## 9. Reproducing everything
 
 ```bash
 voidai demo · voidai bench · voidai bench --real <capture> · voidai hunt <capture>
