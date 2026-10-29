@@ -378,13 +378,14 @@ An estimate is never dressed up as a measurement.
 voidai demo
 ```
 
-Generates a capture in five real sensor formats — Zeek `conn.log`, Zeek
+Generates a capture in real sensor formats — Zeek `conn.log`, `dns.log` and
 `ssl.log`, passivedns, Suricata EVE, Sysmon JSON lines — plus a one-line asset
 inventory, runs the full pipeline, and puts the compromised host at the top of
 the queue. One host beacons, sweeps a port, tunnels DNS, resolves
 algorithmically generated domains, trips two rare signatures, runs a binary the
 estate has never run and lets an Office application spawn a shell; nothing in
-the data labels it. Under a second, no model, no GPU, no network.
+the data labels it. No model, no GPU, no network; detection itself takes about
+half a second.
 
 ```
  #  Severity  Prio  Subject                    Behaviours                                          Findings
