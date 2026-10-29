@@ -4,7 +4,7 @@
 
 **A local-first, evidence-bound agent runtime for cyber defence.**
 
-*Runs on a $80 board. Cites every claim. Tells you what it cost.*
+*Built for an $80 board. Cites every claim. Tells you what it cost.*
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
@@ -373,6 +373,9 @@ An estimate is never dressed up as a measurement.
 ---
 
 ## Try it
+
+The command is `voidai`: the project was called VoidAI before it became
+VoidLexicon, and the command kept the name.
 
 ```bash
 voidai demo
