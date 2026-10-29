@@ -114,6 +114,15 @@ same eight seeds gave **2 of 8**, and different seeds misread — noise, not a
 fix — so the change was not kept. In the two full demo runs made, the
 top-ranked incident did not show it; two runs is not a measurement of that.
 
+A second, on the top-ranked incident itself: the model has described the
+compromised host as "a controlled environment" — once as a verified claim,
+because every finding it cites is real. Nothing in the prompt contains
+"control" or "environment"; the phrase is the model's own. The wording also
+varies by llama.cpp build: on the same capture, with the same seed, a locally
+compiled build and the prebuilt wheel write different analyses, and only the
+prebuilt one produced this sentence. A deployment that needs the same words
+every time needs the same build every time.
+
 Struck claims are shown to the analyst, not silently dropped. Someone deciding
 whether to trust this tool needs to see what it refused to say, and the strike
 count appears on every receipt as a standing measure of confabulation.

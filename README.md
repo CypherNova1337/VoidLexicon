@@ -465,8 +465,9 @@ Every command prints a run receipt unless given `--no-receipt`.
 
 ## Documentation
 
-- **[`docs/proposal.md`](docs/proposal.md)** — the project proposal: problem,
-  architecture, results, and what real data changed
+- **[`docs/proposal.md`](docs/proposal.md)** — the executive summary entered in
+  the Wittgenstein AI Tournament: problem, architecture, results, and what real
+  data changed
 - [`docs/benchmarks.md`](docs/benchmarks.md) — measured accuracy, energy, and
   what real captures changed about the design
 - [`docs/ioc.md`](docs/ioc.md) — the local IOC file format, and why a match is

@@ -1,4 +1,4 @@
-# VoidLexicon — Project Proposal
+# VoidLexicon — Executive Summary
 
 **A local-first, evidence-bound agent runtime for cyber defence.**
 *Entry for the Hackers-Arise Wittgenstein AI Tournament.*
