@@ -136,7 +136,7 @@ exactly; the instruction set cannot be.
 scenario 6 incident: 489-token brief, 286-token response, 25 s, **zero struck
 claims**.
 
-**758 tests**, including one that severs sockets and asserts the pipeline still
+**760 tests**, including one that severs sockets and asserts the pipeline still
 completes.
 
 ## 5. Against the eleven principles
