@@ -8,9 +8,11 @@ Three acquisition strategies, tried in order of fidelity:
 
 1. `RaplSource`   — Intel/AMD RAPL energy counters via powercap sysfs.
                     A true integrated energy counter. Best available on x86.
-2. `HwmonSource`  — any hwmon device exposing `power1_input` in microwatts,
-                    sampled and integrated. Covers Jetson INA3221 rails and
-                    the INA219/INA260 breakouts commonly wired to a Pi.
+2. `HwmonSource`  — an INA current shunt exposing `power1_input` in
+                    microwatts, sampled and integrated. Covers Jetson INA3221
+                    rails and the INA219/INA260 breakouts commonly wired to a
+                    Pi. Other hwmon power sensors measure one component, not
+                    the machine, and are not used.
 3. `EstimatedSource` — CPU-time against a per-platform power profile.
 
 Readings are always tagged with which strategy produced them. An estimate is
@@ -31,6 +33,16 @@ from typing import Protocol
 _POWERCAP = Path("/sys/class/powercap")
 _HWMON = Path("/sys/class/hwmon")
 _DEVICE_TREE_MODEL = Path("/proc/device-tree/model")
+
+#: hwmon drivers that measure the supply a whole board draws: the INA family of
+#: current shunts, which is what a Pi has wired to its 5V rail and what a Jetson
+#: carries on board. A laptop has power sensors too, on its GPU, its battery and
+#: its USB-C ports, but each measures one part of the machine, and some read
+#: zero while that part sleeps. Integrating one printed "0.00 J total,
+#: measured" for a run that kept a laptop busy for 104 seconds.
+_RAIL_DRIVERS = frozenset(
+    {"ina209", "ina219", "ina220", "ina226", "ina230", "ina231", "ina238", "ina260", "ina3221"}
+)
 
 
 class Fidelity(str):
@@ -216,19 +228,17 @@ class HwmonSource:
             return []
         found: list[Path] = []
         for device in sorted(_HWMON.glob("hwmon*")):
+            if _driver(device) not in _RAIL_DRIVERS:
+                continue
             for counter in sorted(device.glob("power*_input")):
-                if os.access(counter, os.R_OK):
+                # The supply rail of a running machine never reads zero. One
+                # that does is unwired, or is not the rail it claims to be.
+                if _microwatts(counter) > 0:
                     found.append(counter)
         return found
 
     def _sample_watts(self) -> float:
-        total_uw = 0.0
-        for path in self._inputs:
-            try:
-                total_uw += float(path.read_text().strip())
-            except (OSError, ValueError):
-                continue
-        return total_uw / 1e6
+        return sum(_microwatts(path) for path in self._inputs) / 1e6
 
     def _loop(self) -> None:
         last = time.monotonic()
@@ -248,6 +258,20 @@ class HwmonSource:
         if self._thread is not None:
             self._thread.join(timeout=2.0)
         return self._joules
+
+
+def _driver(device: Path) -> str:
+    try:
+        return (device / "name").read_text().strip().lower()
+    except OSError:
+        return ""
+
+
+def _microwatts(path: Path) -> float:
+    try:
+        return float(path.read_text().strip())
+    except (OSError, ValueError):
+        return 0.0
 
 
 class EstimatedSource:

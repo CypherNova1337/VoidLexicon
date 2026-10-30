@@ -184,7 +184,9 @@ echo ina219 0x40 | sudo tee /sys/bus/i2c/devices/i2c-1/new_device
 That creates an hwmon device exposing `power1_input` in microwatts.
 `voidai doctor` should then report `measured`, and every receipt switches from
 `estimated` to `measured` automatically — VoidLexicon discovers hwmon power rails
-without configuration.
+without configuration. Only the INA family of current sensors counts as a
+rail. A laptop's GPU or battery sensor measures one part of the machine, not
+its supply, so it is ignored and the receipt stays `estimated`.
 
 Verify by hand first:
 
