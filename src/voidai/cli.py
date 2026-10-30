@@ -177,7 +177,10 @@ def _render_queue(queue: IncidentQueue, limit: int = 20) -> None:
     table.add_column("Severity", no_wrap=True)
     table.add_column("Prio", justify="right", no_wrap=True)
     table.add_column("Subject", no_wrap=True)
-    table.add_column("Behaviours", no_wrap=True)
+    # The one column allowed to wrap. With none wrapping, a host with many
+    # behaviours squeezed #, Severity, Prio and Findings to nothing and cut
+    # the subject short, at every width up to 140 columns.
+    table.add_column("Behaviours", ratio=1)
     table.add_column("Findings", justify="right", no_wrap=True)
 
     for position, ranked in enumerate(queue.top(limit), start=1):

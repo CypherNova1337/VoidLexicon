@@ -353,6 +353,35 @@ class TestTheCommandItself:
         assert not ranked.corroborating_predicates, "fixture must be non-corroborating"
         assert "presents_rare_tls_fingerprint" in _behaviours_cell(ranked)
 
+    @pytest.mark.parametrize("width", [80, 100])
+    def test_the_queue_keeps_every_column(
+        self, capture: Path, width: int, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A long Behaviours cell wraps; it does not squeeze the other columns out.
+
+        With no column allowed to wrap, the demo's top incident drew #,
+        Severity, Prio and Findings at zero width and cut its subject to
+        `host:FINANC…`, at every width up to 140 columns.
+        """
+        import io
+
+        from rich.console import Console
+        from typer.testing import CliRunner
+
+        from voidai import cli
+
+        screen = Console(file=io.StringIO(), width=width, record=True)
+        monkeypatch.setattr(cli, "console", screen)
+        result = CliRunner().invoke(cli.app, ["run", str(capture), "--no-llm", "--no-receipt"])
+        assert result.exit_code == 0, result.output
+
+        lines = screen.export_text().splitlines()
+        header = next(line for line in lines if "Behaviours" in line)
+        for column in ("#", "Severity", "Prio", "Subject", "Findings"):
+            assert f" {column} " in header, header
+        top = next(line for line in lines if line.startswith("│ 1 │"))
+        assert f"host:{PATIENT_ZERO_HOST} " in top, top
+
 
 class TestDoctorTellsTheTruth:
     """A diagnostic that disagrees with the command it diagnoses is worse
